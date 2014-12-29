@@ -363,7 +363,6 @@ function! NewLine () " {{{
     let clc_text   = l:tmp['text']
     let pspace_num = strlen(l:clc_pspace)
     let remain_space = l:pspace_num % (&shiftwidth)
-    echom '['. l:clc_pspace .']'
 
     let pspace_num = l:pspace_num - l:remain_space
 
