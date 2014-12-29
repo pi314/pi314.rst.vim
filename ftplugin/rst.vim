@@ -21,6 +21,7 @@ nnoremap <buffer> <silent> t3 :call Title("~")<CR>
 nnoremap <buffer> <silent> t4 :call Title('"')<CR>
 nnoremap <buffer> <silent> t5 :call Title("'")<CR>
 nnoremap <buffer> <silent> t6 :call Title("`")<CR>
+let s:title_pattern = '^\([^a-zA-Z]\)\1*$'
 
 function! Title(i_title_char) " {{{
     let title_char = a:i_title_char
@@ -39,10 +40,9 @@ function! Title(i_title_char) " {{{
     let orig_col = col('.')
     let line = getline('.')
 
-    let title_pattern = '^\([^a-zA-Z]\)\1*$'
-    if l:line =~# l:title_pattern
+    if l:line =~# s:title_pattern
         " the cursor is on the title line
-        if getline(l:orig_row + 2) =~# l:title_pattern
+        if getline(l:orig_row + 2) =~# s:title_pattern
             " the cursor is on the t0 upper line
             call cursor(l:orig_row + 1, col('.'))
 
@@ -54,7 +54,7 @@ function! Title(i_title_char) " {{{
 
     endif
 
-    if getline(line('.') - 1) =~# l:title_pattern
+    if getline(line('.') - 1) =~# s:title_pattern
         " remove the t0 upper line
         normal! kdd
         call cursor(line('.'), l:orig_col)
@@ -66,7 +66,7 @@ function! Title(i_title_char) " {{{
     if l:next_line_content ==# ''
         call append('.', l:title_string)
 
-    elseif l:next_line_content =~# l:title_pattern
+    elseif l:next_line_content =~# s:title_pattern
         call setline(line('.')+1, l:title_string)
 
     else
@@ -385,4 +385,29 @@ function! NewLine () " {{{
 
     endif
 
+endfunction " }}}
+
+nnoremap <buffer> <silent> tj :call FindNextTitle()<CR>
+nnoremap <buffer> <silent> tk :call FindLastTitle()<CR>
+function! FindNextTitle () " {{{
+    let i = line('.') + 1
+    while l:i <= line('$')
+        if getline(l:i) =~# s:title_pattern
+            call cursor(l:i, 0)
+            break
+        endif
+        let l:i = l:i + 1
+    endwhile
+
+endfunction " }}}
+
+function! FindLastTitle () " {{{
+    let i = line('.') - 1
+    while l:i >= 1
+        if getline(l:i) =~# s:title_pattern
+            call cursor(l:i, 0)
+            break
+        endif
+        let l:i = l:i - 1
+    endwhile
 endfunction " }}}
