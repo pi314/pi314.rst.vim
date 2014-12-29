@@ -445,10 +445,7 @@ function! TableChanged () " {{{
     let clc = getline(l:cln)
     let nlc = getline(l:cln + 1)
     let makeup_n = strlen(l:clc) - strlen(l:nlc)
-
-    if l:makeup_n <= 0
-        return
-    endif
+    echom '['. l:makeup_n .']'
 
     let tmp = GetTableRange(l:cln)
     let t_top = tmp[0]
@@ -459,10 +456,18 @@ function! TableChanged () " {{{
 
     " current cursor col
     let ccc = col('.')
-    if l:clc[(l:ccc-1) : (l:ccc) ] == '  ' && l:makeup_n > 0
+    if l:makeup_n == 0
+        return
+
+    elseif l:makeup_n < 0
+        call setline(l:cln, l:clc[ : (l:ccc - 1) ] .repeat(' ', abs(l:makeup_n)). l:clc[ (l:ccc) : ] )
+        return
+
+    elseif l:clc[(l:ccc-1) : (l:ccc) ] == '  ' && l:makeup_n > 0
         " still have enough spaces, no need to expand table
         call setline(l:cln, l:clc[ : (l:ccc - 1) ] . l:clc[ (l:ccc + 1) : ] )
         return
+
     endif
 
     let i = l:t_top
