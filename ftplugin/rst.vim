@@ -279,7 +279,6 @@ function! ParseBullet (line) " {{{
 
     endif
 
-    "echom '['. l:pspace .']['. l:bullet .']['. l:text .']'
     return {'pspace': (l:pspace), 'bullet': (l:bullet), 'text': (l:text)}
 endfunction " }}}
 
@@ -410,3 +409,123 @@ function! FindLastTitle () " {{{
         let l:i = l:i - 1
     endwhile
 endfunction " }}}
+
+inoremap <buffer> <silent> <leader>t <C-r>=CreateTable()<CR>
+function! CreateTable () " {{{
+    let clc = getline('.')
+    let tmp = ParseBullet(l:clc)
+    let clc_pspace = l:tmp['pspace']
+    let clc_bullet = l:tmp['bullet']
+    let clc_text   = l:tmp['text']
+
+    let pspace = l:clc_pspace
+
+    if l:clc_bullet != ''
+        let l:pspace = l:pspace . repeat(' ', &shiftwidth)
+    endif
+
+    return "\<ESC>o\<ESC>o\<ESC>i". l:pspace ."+--+\<CR>\<ESC>i". l:pspace ."|  |\<CR>\<ESC>i". l:pspace ."+--+\<ESC>khi"
+endfunction " }}}
+
+autocmd CursorMovedI * call CursorMove()
+let s:table_cell_pattern = '^ *|\( [^|]\+ |\| *|\)\+$'
+let s:table_line_pattern = '^ *+\([-=]\++\)\+$'
+let s:table_line_pattern1 = '^ *+\(-\++\)\+$'
+function! CursorMove () " {{{
+    let clc = getline('.')
+    if l:clc =~# s:table_cell_pattern
+        call TableChanged()
+
+    endif
+
+endfunction " }}}
+
+function! TableChanged () " {{{
+    let cln = line('.')
+    let clc = getline(l:cln)
+    let nlc = getline(l:cln + 1)
+    let makeup_n = strlen(l:clc) - strlen(l:nlc)
+
+    if l:makeup_n <= 0
+        return
+    endif
+
+    let tmp = GetTableRange(l:cln)
+    let t_top = tmp[0]
+    let t_bot = tmp[1]
+    if l:t_top == 0
+        return
+    endif
+
+    " current cursor col
+    let ccc = col('.')
+    if l:clc[(l:ccc-1) : (l:ccc) ] == '  ' && l:makeup_n > 0
+        " still have enough spaces, no need to expand table
+        call setline(l:cln, l:clc[ : (l:ccc - 1) ] . l:clc[ (l:ccc + 1) : ] )
+        return
+    endif
+
+    let i = l:t_top
+    while l:i <= l:t_bot
+        if l:i == l:cln
+            let l:i = l:i + 1
+        endif
+
+        let tlc = getline(l:i)
+        if l:tlc =~# s:table_line_pattern1
+            let res = l:tlc[ : (l:ccc - 2 - l:makeup_n) ] .repeat('-', l:makeup_n). l:tlc[ (l:ccc - 2) : ]
+            call setline(l:i, l:res)
+
+        elseif l:tlc =~# s:table_line_pattern
+            let res = l:tlc[ : (l:ccc - 2 - l:makeup_n) ] .repeat('=', l:makeup_n). l:tlc[ (l:ccc - 2) : ]
+            call setline(l:i, l:res)
+
+        elseif l:tlc =~# s:table_cell_pattern
+            let j = l:ccc - 1 - l:makeup_n
+            let tll = strlen(l:tlc)
+            while l:j < l:tll
+                if l:tlc[(l:j)] == '|'
+                    break
+                endif
+                let l:j = l:j + 1
+            endwhile
+            let res = l:tlc[ : (l:j - 1) ] .repeat(' ', l:makeup_n). l:tlc[ (l:j) : ]
+            call setline(l:i, l:res)
+
+        endif
+
+        let l:i = l:i + 1
+    endwhile
+
+endfunction " }}}
+
+function! GetTableRange (cln) " {{{
+    let t_top = a:cln - 1
+    while l:t_top > 0
+        let tlc = getline(l:t_top)
+        if l:tlc =~# '^ *$'
+            let l:t_top = l:t_top + 1
+            break
+        elseif l:tlc !~# s:table_cell_pattern && l:tlc !~# s:table_line_pattern
+            return [0, 0]
+        endif
+
+        let l:t_top = l:t_top - 1
+    endwhile
+
+    let t_bot = a:cln + 1
+    while l:t_bot <= line('$')
+        let tlc = getline(l:t_bot)
+        if l:tlc =~# '^ *$'
+            let l:t_bot = l:t_bot - 1
+            break
+        elseif l:tlc !~# s:table_cell_pattern && l:tlc !~# s:table_line_pattern
+            return [0, 0]
+        endif
+
+        let l:t_bot = l:t_bot + 1
+    endwhile
+
+    return [l:t_top, l:t_bot]
+endfunction " }}}
+
