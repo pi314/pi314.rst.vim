@@ -96,32 +96,52 @@ let s:elpattern4 = '^ *(\?\d\+) \+\([^ ].*\)\?$'        " 1)    (2)
 let s:elpattern5 = '^ *(\?[a-zA-Z]) \+\([^ ].*\)\?$'    " a)    (A)
 
 function! GetLastReferenceLine (cln, pspace_num) " {{{
-    if a:cln > 1
-        let tmp = ParseBullet(getline(a:cln - 1))
+    let tmp = ParseBullet(getline(a:cln))
+    let clc_pspace = repeat(' ', a:pspace_num)
+    let clc_bullet = l:tmp['bullet']
+    let clc_text   = l:tmp['text']
+
+    if a:pspace_num == 0 && l:clc_text == '' && l:clc_bullet == ''
+        let case = 1
+    else
+        let case = 2
+    endif
+
+    " current line is empty
+    let llc_pspace = ''
+    let llc_bullet = ''
+    let empty_line_count = 0
+    let i = a:cln - 1
+    while l:i > 0
+        let tmp = ParseBullet(getline(l:i))
         let llc_pspace = l:tmp['pspace']
         let llc_bullet = l:tmp['bullet']
         let llc_text   = l:tmp['text']
-        if l:llc_text == '' && l:llc_bullet == '' && a:cln > 2
-            let tmp = ParseBullet(getline(a:cln - 2))
-            let llc_pspace = l:tmp['pspace']
-            let llc_bullet = l:tmp['bullet']
-            let llc_text   = l:tmp['text']
-            if l:llc_bullet != '' && strlen(l:llc_pspace) != a:pspace_num && a:pspace_num > 0
-                let llc_bullet = ''
-                let llc_pspace = ''
+
+        if l:llc_text == '' && l:llc_bullet == ''
+            let empty_line_count += 1
+            " two continuous empty line means the list is seperated
+            if l:empty_line_count == 2
+                return {'bullet': '', 'pspace': ''}
             endif
-
-        elseif l:llc_bullet != '' && strlen(l:llc_pspace) != a:pspace_num && a:pspace_num > 0
-            let llc_bullet = ''
-            let llc_pspace = ''
-
+        else
+            let empty_line_count = 0
         endif
 
-    else
-        let l:llc_bullet = ''
-        let llc_pspace = ''
+        if l:case == 1
+            if l:llc_bullet != ''
+                return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
+            endif
+        else
+            if l:llc_text != '' && strlen(l:llc_pspace) == a:pspace_num
+                return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
+            elseif l:llc_text != '' && strlen(l:llc_pspace) < a:pspace_num
+                return {'bullet': '', 'pspace': ''}
+            endif
+        endif
 
-    endif
+        let l:i = l:i - 1
+    endwhile
 
     return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
 
