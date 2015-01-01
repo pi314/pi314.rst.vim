@@ -87,6 +87,7 @@ nnoremap <buffer> <silent> < :call ShiftIndent("LEFT")<CR>
 nnoremap <buffer> <silent> > :call ShiftIndent("RIGHT")<CR>
 vnoremap <buffer> <silent> < :call ShiftIndent("LEFT")<CR>gv
 vnoremap <buffer> <silent> > :call ShiftIndent("RIGHT")<CR>gv
+inoremap <buffer> <silent> <C-]> <ESC>:call ShiftIndent("RIGHT")<CR>A
 
 let s:blpattern = '^ *[-*+] \+\([^ ].*\)\?$'
 let s:elpattern1 = '^ *\d\+\. \+\([^ ].*\)\?$'          " 1.
