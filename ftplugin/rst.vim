@@ -375,6 +375,7 @@ function! CreateBullet () " {{{
 endfunction " }}}
 
 inoremap <buffer> <silent> <CR> <C-r>=NewLine()<CR>
+nmap <buffer> <silent> o A<CR>
 function! NewLine () " {{{
     let cln = line('.')
     let clc = getline(l:cln)
