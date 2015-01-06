@@ -113,6 +113,7 @@ function! GetLastReferenceLine (cln, pspace_num) " {{{
     let llc_bullet = ''
     let empty_line_count = 0
     let i = a:cln - 1
+
     while l:i > 0
         let tmp = ParseBullet(getline(l:i))
         let llc_pspace = l:tmp['pspace']
@@ -125,20 +126,28 @@ function! GetLastReferenceLine (cln, pspace_num) " {{{
             if l:empty_line_count == 2
                 return {'bullet': '', 'pspace': ''}
             endif
+            let l:i = l:i - 1
+            continue
         else
             let empty_line_count = 0
+        endif
+
+        if l:llc_text != '' && strlen(l:llc_pspace) == 0
+            return {'bullet': '', 'pspace': ''}
         endif
 
         if l:case == 1
             if l:llc_bullet != ''
                 return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
             endif
+
         else
             if l:llc_text != '' && strlen(l:llc_pspace) == a:pspace_num
                 return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
             elseif l:llc_text != '' && strlen(l:llc_pspace) < a:pspace_num
                 return {'bullet': '', 'pspace': ''}
             endif
+
         endif
 
         let l:i = l:i - 1
