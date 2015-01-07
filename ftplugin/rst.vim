@@ -315,7 +315,7 @@ endfunction " }}}
 
 inoremap <buffer> <silent> <leader>b <ESC>:call CreateBullet()<CR>a
 nmap     <buffer> <silent> <leader>b A<leader>b<ESC>
-vnoremap <buffer> <silent> <leader>b :call CreateBullet()<CR>
+vnoremap <buffer> <silent> <leader>b :call CreateBullet()<CR>gv
 function! CreateBullet () " {{{
     let cln = line('.')
     let clc = getline(l:cln)
