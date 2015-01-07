@@ -132,7 +132,7 @@ function! GetLastReferenceLine (cln, pspace_num) " {{{
             let empty_line_count = 0
         endif
 
-        if l:llc_text != '' && strlen(l:llc_pspace) == 0
+        if l:llc_text != '' && l:llc_bullet == '' && strlen(l:llc_pspace) == 0
             return {'bullet': '', 'pspace': ''}
         endif
 
@@ -314,6 +314,8 @@ function! ParseBullet (line) " {{{
 endfunction " }}}
 
 inoremap <buffer> <silent> <leader>b <ESC>:call CreateBullet()<CR>a
+nmap     <buffer> <silent> <leader>b A<leader>b<ESC>
+vnoremap <buffer> <silent> <leader>b :call CreateBullet()<CR>
 function! CreateBullet () " {{{
     let cln = line('.')
     let clc = getline(l:cln)
