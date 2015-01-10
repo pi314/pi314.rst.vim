@@ -13,6 +13,9 @@
 setlocal softtabstop=2
 setlocal shiftwidth=2
 
+" Prevent Complete Function Error
+setlocal indentexpr=
+
 " Add a line under a rst title
 nnoremap <buffer> <silent> t0 :call Title("==")<CR>
 nnoremap <buffer> <silent> t1 :call Title("=")<CR>
