@@ -428,7 +428,7 @@ function! FindNextTitle () " {{{
     let i = line('.') + 1
     while l:i <= line('$')
         if getline(l:i) =~# s:title_pattern
-            call cursor(l:i, 0)
+            call cursor(l:i, 1)
             break
         endif
         let l:i = l:i + 1
