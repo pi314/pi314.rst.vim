@@ -135,20 +135,29 @@ function! GetLastReferenceLine (cln, pspace_num) " {{{
             let empty_line_count = 0
         endif
 
-        if l:llc_text != '' && l:llc_bullet == '' && strlen(l:llc_pspace) == 0
+        if l:llc_text != '' && l:llc_bullet == '' && strlen(l:llc_pspace) <= a:pspace_num
+            " non-list-item text & indent <= current line
             return {'bullet': '', 'pspace': ''}
         endif
 
-        if l:case == 1
-            if l:llc_bullet != ''
+        if l:llc_bullet != ''
+            " a list item
+            if l:case == 1
+                " current line is empty, just follow it
                 return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
-            endif
 
-        else
-            if l:llc_text != '' && strlen(l:llc_pspace) == a:pspace_num
-                return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
-            elseif l:llc_text != '' && strlen(l:llc_pspace) < a:pspace_num
-                return {'bullet': '', 'pspace': ''}
+            elseif l:case == 2
+                " current line is not empty, check more
+                if strlen(l:llc_pspace) == a:pspace_num
+                    " same indent, follow it
+                    return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
+
+                elseif strlen(l:llc_pspace) < a:pspace_num
+                    " current line indents more, so the list breaks by the
+                    " line
+                    return {'bullet': '', 'pspace': ''}
+
+                endif
             endif
 
         endif
