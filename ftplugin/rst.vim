@@ -412,11 +412,15 @@ function! NewLine () " {{{
         call setline(l:cln, '')
         return "\<CR>\<ESC>i"
 
-    elseif strpart(l:clc_text, 0, col('.')-1) =~# '^.*:: *$'
+    elseif strpart(l:clc, 0, col('.')-1) =~# '^.*:: *$'
         return "\<CR>\<CR>\<ESC>i". l:clc_pspace . repeat(' ', &shiftwidth * 2)
 
     else
-        return "\<CR>\<CR>\<ESC>d0k:call CreateBullet()\<CR>Ji"
+        if l:clc[ (col('.') - 1) : ] == ''
+            return "\<CR>\<ESC>d0:call CreateBullet()\<CR>a"
+        else
+            return "\<CR>\<CR>\<ESC>d0k:call CreateBullet()\<CR>Ji"
+        endif
 
     endif
 
