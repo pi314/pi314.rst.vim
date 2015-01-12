@@ -416,7 +416,7 @@ function! NewLine () " {{{
         return "\<CR>\<CR>\<ESC>i". l:clc_pspace . repeat(' ', &shiftwidth * 2)
 
     else
-        return "\<CR>\<ESC>d0:call CreateBullet()\<CR>a"
+        return "\<CR>\<CR>\<ESC>d0k:call CreateBullet()\<CR>Ji"
 
     endif
 
