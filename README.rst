@@ -10,6 +10,7 @@ Usage
 * Titles
 
   - ``t0`` ~ ``t6`` makes the current line as a rst title
+  - ``tj``, ``tk`` jumps between titles
 
 * Bullet/Enumerated Lists
 
@@ -17,6 +18,7 @@ Usage
   - ``<leader>b`` again switch it between bulleted/enumberated list item
   - List item changes with indent
   - ``<CR>`` automatically generates a new list item
+  - When cursor is on an list item, ``o`` creates a new item under it
 
 * Indenting
 

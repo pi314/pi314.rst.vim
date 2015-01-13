@@ -13,6 +13,9 @@
 setlocal softtabstop=2
 setlocal shiftwidth=2
 
+" Prevent Complete Function Error
+setlocal indentexpr=
+
 " Add a line under a rst title
 nnoremap <buffer> <silent> t0 :call Title("==")<CR>
 nnoremap <buffer> <silent> t1 :call Title("=")<CR>
@@ -60,7 +63,8 @@ function! Title(i_title_char) " {{{
         call cursor(line('.'), l:orig_col)
     endif
 
-    let title_string = repeat(l:title_char, strdisplaywidth(l:line))
+    let line_length = strdisplaywidth(l:line)
+    let title_string = repeat(l:title_char, l:line_length < 4 ? 4 : l:line_length)
     let next_line_content = getline(line('.') + 1)
 
     if l:next_line_content ==# ''
@@ -87,6 +91,7 @@ nnoremap <buffer> <silent> < :call ShiftIndent("LEFT")<CR>
 nnoremap <buffer> <silent> > :call ShiftIndent("RIGHT")<CR>
 vnoremap <buffer> <silent> < :call ShiftIndent("LEFT")<CR>gv
 vnoremap <buffer> <silent> > :call ShiftIndent("RIGHT")<CR>gv
+inoremap <buffer> <silent> <C-]> <ESC>:call ShiftIndent("RIGHT")<CR>A
 
 let s:blpattern = '^ *[-*+] \+\([^ ].*\)\?$'
 let s:elpattern1 = '^ *\d\+\. \+\([^ ].*\)\?$'          " 1.
@@ -96,32 +101,70 @@ let s:elpattern4 = '^ *(\?\d\+) \+\([^ ].*\)\?$'        " 1)    (2)
 let s:elpattern5 = '^ *(\?[a-zA-Z]) \+\([^ ].*\)\?$'    " a)    (A)
 
 function! GetLastReferenceLine (cln, pspace_num) " {{{
-    if a:cln > 1
-        let tmp = ParseBullet(getline(a:cln - 1))
+    let tmp = ParseBullet(getline(a:cln))
+    let clc_pspace = repeat(' ', a:pspace_num)
+    let clc_bullet = l:tmp['bullet']
+    let clc_text   = l:tmp['text']
+
+    if a:pspace_num == 0 && l:clc_text == '' && l:clc_bullet == ''
+        let case = 1
+    else
+        let case = 2
+    endif
+
+    " current line is empty
+    let llc_pspace = ''
+    let llc_bullet = ''
+    let empty_line_count = 0
+    let i = a:cln - 1
+
+    while l:i > 0
+        let tmp = ParseBullet(getline(l:i))
         let llc_pspace = l:tmp['pspace']
         let llc_bullet = l:tmp['bullet']
         let llc_text   = l:tmp['text']
-        if l:llc_text == '' && l:llc_bullet == '' && a:cln > 2
-            let tmp = ParseBullet(getline(a:cln - 2))
-            let llc_pspace = l:tmp['pspace']
-            let llc_bullet = l:tmp['bullet']
-            let llc_text   = l:tmp['text']
-            if l:llc_bullet != '' && strlen(l:llc_pspace) != a:pspace_num && a:pspace_num > 0
-                let llc_bullet = ''
-                let llc_pspace = ''
-            endif
 
-        elseif l:llc_bullet != '' && strlen(l:llc_pspace) != a:pspace_num && a:pspace_num > 0
-            let llc_bullet = ''
-            let llc_pspace = ''
+        if l:llc_text == '' && l:llc_bullet == ''
+            let empty_line_count += 1
+            " two continuous empty line means the list is seperated
+            if l:empty_line_count == 2
+                return {'bullet': '', 'pspace': ''}
+            endif
+            let l:i = l:i - 1
+            continue
+        else
+            let empty_line_count = 0
+        endif
+
+        if l:llc_text != '' && l:llc_bullet == '' && strlen(l:llc_pspace) <= a:pspace_num
+            " non-list-item text & indent <= current line
+            return {'bullet': '', 'pspace': ''}
+        endif
+
+        if l:llc_bullet != ''
+            " a list item
+            if l:case == 1
+                " current line is empty, just follow it
+                return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
+
+            elseif l:case == 2
+                " current line is not empty, check more
+                if strlen(l:llc_pspace) == a:pspace_num
+                    " same indent, follow it
+                    return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
+
+                elseif strlen(l:llc_pspace) < a:pspace_num
+                    " current line indents more, so the list breaks by the
+                    " line
+                    return {'bullet': '', 'pspace': ''}
+
+                endif
+            endif
 
         endif
 
-    else
-        let l:llc_bullet = ''
-        let llc_pspace = ''
-
-    endif
+        let l:i = l:i - 1
+    endwhile
 
     return {'bullet': l:llc_bullet, 'pspace': l:llc_pspace}
 
@@ -283,6 +326,8 @@ function! ParseBullet (line) " {{{
 endfunction " }}}
 
 inoremap <buffer> <silent> <leader>b <ESC>:call CreateBullet()<CR>a
+nmap     <buffer> <silent> <leader>b A<leader>b<ESC>
+vnoremap <buffer> <silent> <leader>b :call CreateBullet()<CR>gv
 function! CreateBullet () " {{{
     let cln = line('.')
     let clc = getline(l:cln)
@@ -353,6 +398,7 @@ function! CreateBullet () " {{{
 endfunction " }}}
 
 inoremap <buffer> <silent> <CR> <C-r>=NewLine()<CR>
+nmap <buffer> <silent> o A<CR>
 function! NewLine () " {{{
     let cln = line('.')
     let clc = getline(l:cln)
@@ -375,11 +421,15 @@ function! NewLine () " {{{
         call setline(l:cln, '')
         return "\<CR>\<ESC>i"
 
-    elseif strpart(l:clc_text, 0, col('.')-1) =~# '^.*:: *$'
+    elseif strpart(l:clc, 0, col('.')-1) =~# '^.*:: *$'
         return "\<CR>\<CR>\<ESC>i". l:clc_pspace . repeat(' ', &shiftwidth * 2)
 
     else
-        return "\<CR>\<ESC>d0:call CreateBullet()\<CR>a"
+        if l:clc[ (col('.') - 1) : ] == ''
+            return "\<CR>\<ESC>d0:call CreateBullet()\<CR>a"
+        else
+            return "\<CR>\<CR>\<ESC>d0k:call CreateBullet()\<CR>Ji"
+        endif
 
     endif
 
@@ -391,7 +441,7 @@ function! FindNextTitle () " {{{
     let i = line('.') + 1
     while l:i <= line('$')
         if getline(l:i) =~# s:title_pattern
-            call cursor(l:i, 0)
+            call cursor(l:i, 1)
             break
         endif
         let l:i = l:i + 1
