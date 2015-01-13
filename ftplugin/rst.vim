@@ -63,7 +63,8 @@ function! Title(i_title_char) " {{{
         call cursor(line('.'), l:orig_col)
     endif
 
-    let title_string = repeat(l:title_char, strdisplaywidth(l:line))
+    let line_length = strdisplaywidth(l:line)
+    let title_string = repeat(l:title_char, l:line_length < 4 ? 4 : l:line_length)
     let next_line_content = getline(line('.') + 1)
 
     if l:next_line_content ==# ''
