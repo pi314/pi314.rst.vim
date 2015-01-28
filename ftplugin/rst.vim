@@ -419,8 +419,24 @@ function! NewLine () " {{{
         return "\<CR>"
 
     elseif l:clc_text == ''
-        call setline(l:cln, '')
-        return "\<CR>\<ESC>i"
+        let destroy_bullet = 0
+        if l:cln == 1
+            let l:destroy_bullet = 1
+        else
+            let llc = getline(l:cln - 1)
+            if l:llc =~# "^ *$"
+                let l:destroy_bullet = 1
+            else
+                let l:destroy_bullet = 0
+            endif
+        endif
+
+        if l:destroy_bullet == 1
+            call setline(l:cln, '')
+            return ""
+        else
+            return "\<ESC>O\<ESC>jA"
+        endif
 
     elseif strpart(l:clc, 0, col('.')-1) =~# '^.*:: *$'
         return "\<CR>\<CR>\<ESC>i". l:clc_pspace . repeat(' ', &shiftwidth * 2)
