@@ -41,9 +41,19 @@ function! Title(i_title_char) " {{{
 
     let orig_row = line('.')
     let orig_col = col('.')
-    let line = getline('.')
 
-    if l:line =~# s:title_pattern
+    let tmp = ParseBullet(getline('.'))
+    let clc_pspace = l:tmp['pspace']
+    let clc_bullet = l:tmp['bullet']
+    let clc_text   = l:tmp['text']
+    let clc_origin = l:tmp['origin']
+
+    if l:clc_bullet != '' || l:clc_pspace != ''
+        let l:clc_origin = l:clc_text
+        call setline('.', l:clc_origin)
+    endif
+
+    if l:clc_origin =~# s:title_pattern
         " the cursor is on the title line
         if getline(l:orig_row + 2) =~# s:title_pattern
             " the cursor is on the t0 upper line
@@ -63,7 +73,7 @@ function! Title(i_title_char) " {{{
         call cursor(line('.'), l:orig_col)
     endif
 
-    let line_length = strdisplaywidth(l:line)
+    let line_length = strdisplaywidth(l:clc_origin)
     let title_string = repeat(l:title_char, l:line_length < 4 ? 4 : l:line_length)
     let next_line_content = getline(line('.') + 1)
 
@@ -323,7 +333,7 @@ function! ParseBullet (line) " {{{
     endif
 
     "echom '['. l:pspace .']['. l:bullet .']['. l:text .']'
-    return {'pspace': (l:pspace), 'bullet': (l:bullet), 'text': (l:text)}
+    return {'pspace': (l:pspace), 'bullet': (l:bullet), 'text': (l:text), 'origin': (a:line)}
 endfunction " }}}
 
 inoremap <buffer> <silent> <leader>b <ESC>:call CreateBullet()<CR>a
