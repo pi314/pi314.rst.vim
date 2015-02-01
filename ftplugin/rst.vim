@@ -103,6 +103,31 @@ vnoremap <buffer> <silent> < :call ShiftIndent("LEFT")<CR>gv
 vnoremap <buffer> <silent> > :call ShiftIndent("RIGHT")<CR>gv
 inoremap <buffer> <silent> <C-]> <ESC>:call ShiftIndent("RIGHT")<CR>A
 
+inoremap <buffer> <silent> <TAB> <C-r>=Tab()<CR>
+function! Tab ()
+    let cln = line('.')
+    let clc = getline(l:cln)
+    let tmp = ParseBullet(l:clc)
+    let clc_pspace = l:tmp['pspace']
+    let clc_bullet = l:tmp['bullet']
+    let clc_text   = l:tmp['text']
+
+    if l:clc_bullet == ''
+        return "\<TAB>"
+
+    elseif l:clc_bullet != '' && strpart(l:clc, 0, col('.')-1 ) =~# '^'. l:clc_pspace . l:clc_bullet .' *$'
+        if l:clc_text == ''
+            return "\<ESC>:call ShiftIndent('RIGHT')\<CR>A"
+        else
+            return "\<ESC>:call ShiftIndent('RIGHT')\<CR>^Wi"
+        endif
+
+    endif
+
+    return "\<TAB>"
+
+endfunction
+
 let s:blpattern = '^ *[-*+] \+\([^ ].*\)\?$'
 let s:elpattern1 = '^ *\d\+\. \+\([^ ].*\)\?$'          " 1.
 let s:elpattern2 = '^ *#\. \+\([^ ].*\)\?$'             " #.
@@ -486,3 +511,4 @@ function! FindLastTitle () " {{{
         let l:i = l:i - 1
     endwhile
 endfunction " }}}
+
