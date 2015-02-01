@@ -103,8 +103,9 @@ vnoremap <buffer> <silent> < :call ShiftIndent("LEFT")<CR>gv
 vnoremap <buffer> <silent> > :call ShiftIndent("RIGHT")<CR>gv
 inoremap <buffer> <silent> <C-]> <ESC>:call ShiftIndent("RIGHT")<CR>A
 
-inoremap <buffer> <silent> <TAB> <C-r>=Tab()<CR>
-function! Tab ()
+inoremap <buffer> <silent> <TAB> <C-r>=Tab("NORMAL")<CR>
+inoremap <buffer> <silent> <S-TAB> <C-r>=Tab("SHIFT")<CR>
+function! Tab (tab_type) " {{{
     let cln = line('.')
     let clc = getline(l:cln)
     let tmp = ParseBullet(l:clc)
@@ -112,21 +113,23 @@ function! Tab ()
     let clc_bullet = l:tmp['bullet']
     let clc_text   = l:tmp['text']
 
+    let direction = { "NORMAL": "RIGHT", "SHIFT": "LEFT"}[a:tab_type]
+
     if l:clc_bullet == ''
         return "\<TAB>"
 
     elseif l:clc_bullet != '' && strpart(l:clc, 0, col('.')-1 ) =~# '^'. l:clc_pspace . l:clc_bullet .' *$'
         if l:clc_text == ''
-            return "\<ESC>:call ShiftIndent('RIGHT')\<CR>A"
+            return "\<ESC>:call ShiftIndent('". direction ."')\<CR>A"
         else
-            return "\<ESC>:call ShiftIndent('RIGHT')\<CR>^Wi"
+            return "\<ESC>:call ShiftIndent('". direction ."')\<CR>^Wi"
         endif
 
     endif
 
     return "\<TAB>"
 
-endfunction
+endfunction " }}}
 
 let s:blpattern = '^ *[-*+] \+\([^ ].*\)\?$'
 let s:elpattern1 = '^ *\d\+\. \+\([^ ].*\)\?$'          " 1.
