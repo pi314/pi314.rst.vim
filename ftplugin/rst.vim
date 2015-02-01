@@ -115,10 +115,20 @@ function! Tab (tab_type) " {{{
 
     let direction = { "NORMAL": "RIGHT", "SHIFT": "LEFT"}[a:tab_type]
 
+    echom '['. l:clc .']'
+    echom '['. l:clc_pspace .']'
+    echom '['. l:clc_bullet .']'
+    echom '['. l:clc_text .']'
+    echom '{'. strpart(l:clc, 0, col('.')-1 ) .'}'
+    echom '{'. '^'. l:clc_pspace . l:clc_bullet .' *$' .'}'
+    echom '===================='
+
+    let clc_before_cursor = substitute(strpart(l:clc, 0, col('.')-1 ), ' *$', '', '')
+
     if l:clc_bullet == ''
         return "\<TAB>"
 
-    elseif l:clc_bullet != '' && strpart(l:clc, 0, col('.')-1 ) =~# '^'. l:clc_pspace . l:clc_bullet .' *$'
+    elseif l:clc_bullet != '' && l:clc_before_cursor ==# l:clc_pspace . l:clc_bullet
         if l:clc_text == ''
             return "\<ESC>:call ShiftIndent('". direction ."')\<CR>A"
         else
