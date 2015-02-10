@@ -273,6 +273,10 @@ function! ShiftIndent (direction) " {{{
     let clc_text   = l:tmp['text']
     let remain_space = strlen(l:clc_pspace) % (&shiftwidth)
 
+    if l:clc_text ==# '' && l:clc_bullet ==# ''
+        return
+    endif
+
     if a:direction ==# "LEFT"
         let pspace_num = strlen(l:clc_pspace) - ((l:remain_space != 0) ? (l:remain_space) : &shiftwidth)
         let l:pspace_num = (l:pspace_num < 0) ? 0 : (l:pspace_num)
