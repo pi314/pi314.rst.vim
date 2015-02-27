@@ -460,12 +460,12 @@ function! NewLine () " {{{
     let clc_bullet = l:tmp['bullet']
     let clc_text   = l:tmp['text']
     let pspace_num = strlen(l:clc_pspace)
-    let remain_space = l:pspace_num % (&shiftwidth)
+    let remain_space = l:pspace_num % (&softtabstop)
 
     let pspace_num = l:pspace_num - l:remain_space
 
     if l:clc_bullet == '' && strpart(l:clc_text, 0, col('.')-1) =~# '^.*:: *$'
-        return "\<CR>\<CR>\<ESC>i". l:clc_pspace . repeat(' ', &shiftwidth)
+        return "\<CR>\<CR>\<ESC>0Di". l:clc_pspace . repeat(' ', &softtabstop)
 
     elseif l:clc_bullet == ''
         return "\<CR>"
@@ -491,7 +491,9 @@ function! NewLine () " {{{
         endif
 
     elseif strpart(l:clc, 0, col('.')-1) =~# '^.*:: *$'
-        return "\<CR>\<CR>\<ESC>i". l:clc_pspace . repeat(' ', &shiftwidth * 2)
+        let bspace = repeat(' ', strlen(l:clc_bullet))
+        let bullet_space = repeat(' ', &softtabstop - ((strlen(l:clc_pspace) + strlen(l:clc_bullet)) % (&softtabstop)) )
+        return "\<CR>\<CR>\<ESC>0Di". l:clc_pspace . l:bspace . l:bullet_space . repeat(' ', &softtabstop)
 
     else
         if l:clc[ (col('.') - 1) : ] == ''
