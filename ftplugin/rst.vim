@@ -498,6 +498,8 @@ function! NewLine () " {{{
     else
         if l:clc[ (col('.') - 1) : ] == ''
             return "\<CR>\<ESC>d0:call CreateBullet()\<CR>a"
+        elseif l:clc[ (col('.') - 1) : ] ==# l:clc_text
+            return "\<CR>\<CR>\<ESC>d0k:call CreateBullet()\<CR>k0DjJi"
         else
             return "\<CR>\<CR>\<ESC>d0k:call CreateBullet()\<CR>Ji"
         endif
