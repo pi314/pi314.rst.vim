@@ -346,36 +346,43 @@ function! ParseBullet (line) " {{{
     let bullet = ''
     if a:line =~# s:blpattern
         let bullet = matchstr(a:line, '\(^ *\)\@<=[-*+]\( \+\([^ ].*\)\?$\)\@=')
-        let text = matchstr(a:line, '\(^ *[-*+] \+\)\@<=\([^ ].*\)\?$')
+        let bspace = matchstr(a:line, '\(^ *[-*+]\)\@<= \+\(\([^ ].*\)\?$\)\@=')
+        let text   = matchstr(a:line, '\(^ *[-*+] \+\)\@<=\([^ ].*\)\?$')
 
     elseif a:line =~# s:elpattern1
         let bullet = matchstr(a:line, '\(^ *\)\@<=\d\+\.\( \+\([^ ].*\)\?$\)\@=')
+        let bspace = matchstr(a:line, '\(^ *\d\+\.\)\@<= \+\(\([^ ].*\)\?$\)\@=')
         let text = matchstr(a:line, '\(^ *\d\+\. \+\)\@<=\([^ ].*\)\?$')
 
     elseif a:line =~# s:elpattern2
         let bullet = matchstr(a:line, '\(^ *\)\@<=#\.\( \+\([^ ].*\)\?$\)\@=')
+        let bspace = matchstr(a:line, '\(^ *#\.\)\@<= \+\(\([^ ].*\)\?$\)\@=')
         let text = matchstr(a:line, '\(^ *#\. \+\)\@<=\([^ ].*\)\?$')
 
     elseif a:line =~# s:elpattern3
         let bullet = matchstr(a:line, '\(^ *\)\@<=[a-zA-Z]\.\( \+\([^ ].*\)\?$\)\@=')
+        let bspace = matchstr(a:line, '\(^ *[a-zA-Z]\.\)\@<= \+\(\([^ ].*\)\?$\)\@=')
         let text = matchstr(a:line, '\(^ *[a-zA-Z]\. \+\)\@<=\([^ ].*\)\?$')
 
     elseif a:line =~# s:elpattern4
         let bullet = matchstr(a:line, '\(^ *\)\@<=(\?\d\+)\( \+\([^ ].*\)\?$\)\@=')
+        let bspace = matchstr(a:line, '\(^ *(\?\d\+)\)\@<= \+\(\([^ ].*\)\?$\)\@=')
         let text = matchstr(a:line, '\(^ *(\?\d\+) \+\)\@<=\([^ ].*\)\?$')
 
     elseif a:line =~# s:elpattern5
         let bullet = matchstr(a:line, '\(^ *\)\@<=(\?[a-zA-Z])\( \+\([^ ].*\)\?$\)\@=')
+        let bspace = matchstr(a:line, '\(^ *(\?[a-zA-Z])\)\@<= \+\(\([^ ].*\)\?$\)\@=')
         let text = matchstr(a:line, '\(^ *(\?[a-zA-Z]) \+\)\@<=\([^ ].*\)\?$')
 
     else
         let bullet = ''
+        let bspace = ''
         let text = matchstr(a:line, '\(^ *\)\@<=[^ ].*$')
 
     endif
 
     "echom '['. l:pspace .']['. l:bullet .']['. l:text .']'
-    return {'pspace': (l:pspace), 'bullet': (l:bullet), 'text': (l:text), 'origin': (a:line)}
+    return {'pspace': (l:pspace), 'bullet': (l:bullet), 'text': (l:text), 'origin': (a:line), 'bspace': (l:bspace)}
 endfunction " }}}
 
 inoremap <buffer> <silent> <leader>b <ESC>:call CreateBullet()<CR>a
@@ -506,6 +513,19 @@ function! NewLine () " {{{
 
     endif
 
+endfunction " }}}
+nmap <buffer> <silent> O :call UpperNewLine()<CR>A
+function! UpperNewLine () " {{{
+    let cln = line('.')
+    let clc = getline(l:cln)
+    let tmp = ParseBullet(l:clc)
+    let clc_pspace = l:tmp['pspace']
+    let clc_bullet = l:tmp['bullet']
+    let clc_bspace = l:tmp['bspace']
+    let clc_text   = l:tmp['text']
+    call append(l:cln - 1, '')
+    call cursor(l:cln, 1)
+    call setline(l:cln, l:clc_pspace . l:clc_bullet . l:clc_bspace)
 endfunction " }}}
 
 nnoremap <buffer> <silent> tj :call FindNextTitle()<CR>
