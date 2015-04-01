@@ -466,49 +466,64 @@ function! NewLine () " {{{
     let clc_pspace = l:tmp['pspace']
     let clc_bullet = l:tmp['bullet']
     let clc_text   = l:tmp['text']
+    let clc_bspace = l:tmp['bspace']
     let pspace_num = strlen(l:clc_pspace)
     let remain_space = l:pspace_num % (&softtabstop)
 
     let pspace_num = l:pspace_num - l:remain_space
 
-    if l:clc_bullet == '' && strpart(l:clc_text, 0, col('.')-1) =~# '^.*:: *$'
-        return "\<CR>\<CR>\<ESC>0Di". l:clc_pspace . repeat(' ', &softtabstop)
-
-    elseif l:clc_bullet == ''
-        return "\<CR>"
-
-    elseif l:clc_text == ''
-        let destroy_bullet = 0
-        if l:cln == 1
-            let l:destroy_bullet = 1
+    if l:clc_bullet == ''
+        " no bullet item
+        if strpart(l:clc_text, 0, col('.')-1) =~# '^.*:: *$'
+            " abc :: _(abc)?
+            return "\<CR>\<CR>\<CR>\<ESC>k0Di". l:clc_pspace . repeat(' ', &softtabstop) . "\<ESC>JI"
+        elseif l:clc_pspace == '' && strpart(l:clc_text, 0, col('.')-1) =~# '^:[^:]\+:'
+            " ^:abc:_(abc)?
+            return "\<CR>". repeat(' ', &softtabstop)
         else
-            let llc = getline(l:cln - 1)
-            if l:llc =~# "^ *$"
+            return "\<CR>"
+        endif
+    else
+        " bullet item
+        if l:clc_text == ''
+            " empty bullet
+            let destroy_bullet = 0
+            if l:cln == 1
                 let l:destroy_bullet = 1
             else
-                let l:destroy_bullet = 0
+                let llc = getline(l:cln - 1)
+                if l:llc =~# "^ *$"
+                    let l:destroy_bullet = 1
+                else
+                    let l:destroy_bullet = 0
+                endif
             endif
-        endif
 
-        if l:destroy_bullet == 1
-            call setline(l:cln, '')
-            return ""
-        else
-            return "\<ESC>O\<ESC>jA"
-        endif
+            if l:destroy_bullet == 1
+                call setline(l:cln, '')
+                return ""
+            else
+                return "\<ESC>O\<ESC>jA"
+            endif
+            
+        elseif strpart(l:clc, 0, col('.')-1) =~# '^.*:: *$'
+            " 1. abc:: _
+            let bspace = repeat(' ', strlen(l:clc_bullet))
+            let bullet_space = repeat(' ', &softtabstop - ((strlen(l:clc_pspace) + strlen(l:clc_bullet)) % (&softtabstop)) )
+            return "\<CR>\<CR>\<CR>\<ESC>k0Di".l:clc_pspace.l:bspace.l:bullet_space . repeat(' ', &softtabstop)."\<ESC>JI"
 
-    elseif strpart(l:clc, 0, col('.')-1) =~# '^.*:: *$'
-        let bspace = repeat(' ', strlen(l:clc_bullet))
-        let bullet_space = repeat(' ', &softtabstop - ((strlen(l:clc_pspace) + strlen(l:clc_bullet)) % (&softtabstop)) )
-        return "\<CR>\<CR>\<ESC>0Di". l:clc_pspace . l:bspace . l:bullet_space . repeat(' ', &softtabstop)
+        elseif l:clc_text != ''
+            if l:clc[ (col('.') - 1) : ] == ''
+                " 1.  abcd_
+                return "\<CR>\<ESC>d0:call CreateBullet()\<CR>a"
+            elseif l:clc[ (col('.') - 1) : ] ==# l:clc_text
+                " 1.  _abcd
+                return "\<ESC>O\<ESC>jWi"
+            else
+                " 1.  ab_cd
+                return "\<CR>\<CR>\<ESC>d0k:call CreateBullet()\<CR>Ji"
+            endif
 
-    else
-        if l:clc[ (col('.') - 1) : ] == ''
-            return "\<CR>\<ESC>d0:call CreateBullet()\<CR>a"
-        elseif l:clc[ (col('.') - 1) : ] ==# l:clc_text
-            return "\<CR>\<CR>\<ESC>d0k:call CreateBullet()\<CR>k0DjJi"
-        else
-            return "\<CR>\<CR>\<ESC>d0k:call CreateBullet()\<CR>Ji"
         endif
 
     endif
