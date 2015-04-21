@@ -111,6 +111,7 @@ function! Tab (tab_type) " {{{
     let tmp = ParseBullet(l:clc)
     let clc_pspace = l:tmp['pspace']
     let clc_bullet = l:tmp['bullet']
+    let clc_bspace = l:tmp['bspace']
     let clc_text   = l:tmp['text']
 
     let direction = { "NORMAL": "RIGHT", "SHIFT": "LEFT"}[a:tab_type]
@@ -125,7 +126,7 @@ function! Tab (tab_type) " {{{
 
     let clc_before_cursor = substitute(strpart(l:clc, 0, col('.')-1 ), ' *$', '', '')
 
-    if l:clc_bullet == ''
+    if l:clc_bullet == '' || strlen(l:clc_bspace) + strlen(l:clc_bullet) < &softtabstop
         return "\<TAB>"
 
     elseif l:clc_bullet != '' && l:clc_before_cursor ==# l:clc_pspace . l:clc_bullet
@@ -505,7 +506,7 @@ function! NewLine () " {{{
             else
                 return "\<ESC>O\<ESC>jA"
             endif
-            
+
         elseif strpart(l:clc, 0, col('.')-1) =~# '^.*:: *$'
             " 1. abc:: _
             let bspace = repeat(' ', strlen(l:clc_bullet))
