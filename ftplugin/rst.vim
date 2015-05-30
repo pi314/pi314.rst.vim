@@ -21,7 +21,7 @@ nnoremap <buffer> <silent> t3 :call Title("~")<CR>
 nnoremap <buffer> <silent> t4 :call Title('"')<CR>
 nnoremap <buffer> <silent> t5 :call Title("'")<CR>
 nnoremap <buffer> <silent> t6 :call Title("`")<CR>
-let s:title_pattern = '^\([^a-zA-Z 	]\)\1*$'
+let s:title_pattern = '^\([^a-zA-Z 	]\)\1\{3,}$'
 
 function! Title(i_title_char) " {{{
     let title_char = a:i_title_char
