@@ -9,9 +9,6 @@
 "              Want To Public License, Version 2, as published by Sam Hocevar.
 "              See http://sam.zoy.org/wtfpl/COPYING for more details.
 " ============================================================================
-"
-setlocal softtabstop=2
-setlocal shiftwidth=2
 
 " Prevent Complete Function Error
 setlocal indentexpr=
