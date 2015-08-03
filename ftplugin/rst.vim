@@ -98,7 +98,6 @@ nnoremap <buffer> <silent> < :call ShiftIndent("LEFT")<CR>
 nnoremap <buffer> <silent> > :call ShiftIndent("RIGHT")<CR>
 vnoremap <buffer> <silent> < :call ShiftIndent("LEFT")<CR>gv
 vnoremap <buffer> <silent> > :call ShiftIndent("RIGHT")<CR>gv
-inoremap <buffer> <silent> <C-]> <ESC>:call ShiftIndent("RIGHT")<CR>A
 
 inoremap <buffer> <silent> <TAB> <C-r>=Tab("NORMAL")<CR>
 inoremap <buffer> <silent> <S-TAB> <C-r>=Tab("SHIFT")<CR>
@@ -120,10 +119,12 @@ function! Tab (tab_type) " {{{
     echom '{'. strpart(l:clc, 0, col('.')-1 ) .'}'
     echom '{'. '^'. l:clc_pspace . l:clc_bullet .' *$' .'}'
     echom '===================='
+    echom strlen(l:clc_bspace) + strlen(l:clc_bullet)
+    echom &softtabstop
 
     let clc_before_cursor = substitute(strpart(l:clc, 0, col('.')-1 ), ' *$', '', '')
 
-    if l:clc_bullet == '' || strlen(l:clc_bspace) + strlen(l:clc_bullet) < &softtabstop
+    if l:clc_bullet == '' || (strlen(l:clc_bspace) < &softtabstop && strlen(l:clc_bspace) + strlen(l:clc_bullet) % &softtabstop != 0)
         return "\<TAB>"
 
     elseif l:clc_bullet != '' && l:clc_before_cursor ==# l:clc_pspace . l:clc_bullet
