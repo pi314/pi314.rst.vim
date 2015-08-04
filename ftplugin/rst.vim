@@ -124,7 +124,8 @@ function! Tab (tab_type) " {{{
 
     let clc_before_cursor = substitute(strpart(l:clc, 0, col('.')-1 ), ' *$', '', '')
 
-    if l:clc_bullet == '' || (strlen(l:clc_bspace) < &softtabstop && strlen(l:clc_bspace) + strlen(l:clc_bullet) % &softtabstop != 0)
+    let clc_bullet_bspace_len = strlen(l:clc_bullet) + strlen(l:clc_bspace)
+    if l:clc_bullet == '' || (l:clc_bullet_bspace_len % &softtabstop != 0 && l:clc_bullet_bspace_len < &softtabstop)
         return "\<TAB>"
 
     elseif l:clc_bullet != '' && l:clc_before_cursor ==# l:clc_pspace . l:clc_bullet
