@@ -88,7 +88,9 @@ function! s:get_ol_bullet (lineobj) " {{{
 endfunction " }}}
 
 function! s:choose_bullet_type (lineobj, toggle) " {{{
-    if has_key(a:lineobj, 'bullet-num')
+    if !has_key(a:lineobj, 'bullet-type')
+        return s:UL_BULLET
+    elseif has_key(a:lineobj, 'bullet-num')
         return [s:OL_BULLET, s:UL_BULLET][a:toggle]
     else
         return [s:UL_BULLET, s:OL_BULLET][a:toggle]
@@ -102,14 +104,10 @@ function! rst#set_bullet (...) " {{{
     endif
 
     let l:_ = s:parse_line('.')
-    if has_key(l:_, 'bullet-type')
-        if s:choose_bullet_type(l:_, l:toggle) == s:UL_BULLET
-            call setline('.', l:_['pspace'] . s:get_ul_bullet(l:_) . l:_['text'])
-        else
-            call setline('.', l:_['pspace'] . s:get_ol_bullet(l:_) . l:_['text'])
-        endif
-    else
+    if s:choose_bullet_type(l:_, l:toggle) == s:UL_BULLET
         call setline('.', l:_['pspace'] . s:get_ul_bullet(l:_) . l:_['text'])
+    else
+        call setline('.', l:_['pspace'] . s:get_ol_bullet(l:_) . l:_['text'])
     endif
 endfunction " }}}
 
