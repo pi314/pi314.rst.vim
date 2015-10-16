@@ -101,15 +101,21 @@ function! rst#set_bullet (...) " {{{
         let l:toggle = 0
     endif
 
-    let l:lineobj = s:parse_line('.')
-    if has_key(l:lineobj, 'bullet-type')
-        let l:_ = l:lineobj
+    let l:_ = s:parse_line('.')
+    if has_key(l:_, 'bullet-type')
         if s:choose_bullet_type(l:_, l:toggle) == s:UL_BULLET
             call setline('.', l:_['pspace'] . s:get_ul_bullet(l:_) . l:_['text'])
         else
             call setline('.', l:_['pspace'] . s:get_ol_bullet(l:_) . l:_['text'])
         endif
+    else
+        call setline('.', l:_['pspace'] . s:get_ul_bullet(l:_) . l:_['text'])
     endif
+endfunction " }}}
+
+function! rst#remove_bullet () " {{{
+    let l:_ = s:parse_line('.')
+    call setline('.', l:_['pspace'] . l:_['text'])
 endfunction " }}}
 
 function! rst#increase_indent () " {{{

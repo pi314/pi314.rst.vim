@@ -16,6 +16,7 @@ Usage
 
   - ``<leader>b`` generates a new bulleted list item
   - ``<leader>b`` again switch it between bulleted/enumberated list item
+  - ``<leader>B`` removes the bullet
   - List item changes with indent
   - ``<CR>`` automatically generates a new list item
   - When cursor is on an list item, ``o`` creates a new item under it
