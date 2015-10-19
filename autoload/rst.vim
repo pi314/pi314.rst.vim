@@ -99,12 +99,7 @@ function! s:parse_line (row) " {{{
 endfunction " }}}
 
 function! s:get_bspace (bullet) " {{{
-    let bullet_len = s:vwidth(a:bullet)
-    let l:bspace = repeat(' ', &softtabstop - s:vwidth(a:bullet))
-    if l:bspace ==# ''
-        let l:bspace = repeat(' ', &softtabstop)
-    endif
-    return l:bspace
+    return repeat(' ', &softtabstop - (s:vwidth(a:bullet) % &softtabstop))
 endfunction " }}}
 
 function! s:get_ul_bullet (lineobj) " {{{
