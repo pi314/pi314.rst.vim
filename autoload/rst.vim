@@ -194,12 +194,19 @@ endfunction " }}}
 
 function! s:write_line (lineobj) " {{{
     let l:_ = a:lineobj
+    let l:row = line('.')
+    let l:col = col('.')
     if get(l:_, 'bullet-type', s:NO_BULLET) == s:NO_BULLET
         call setline(l:_['row'], l:_['pspace'] . l:_['text'])
     elseif l:_['bullet-type'] == s:UL_BULLET
         call setline(l:_['row'], l:_['pspace'] . s:get_ul_bullet(l:_) . l:_['text'])
     else
         call setline(l:_['row'], l:_['pspace'] . s:get_ol_bullet(l:_) . l:_['text'])
+    endif
+    if l:row == l:_['row']
+        let l:origin_len = s:vwidth(l:_['origin'])
+        let l:new_len = s:vwidth(getline('.'))
+        call cursor(l:row, l:col + l:new_len - l:origin_len)
     endif
 endfunction " }}}
 
