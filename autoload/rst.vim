@@ -92,7 +92,6 @@ function! s:parse_line (row) " {{{
     " not a bulleted list item
     let l:matchobj = matchlist(l:line, '\v(^ *)(.*)')
     let l:ret['pspace'] = l:matchobj[1]
-    let l:ret['bullet-type'] = s:NO_BULLET
     let l:ret['text'] = l:matchobj[2]
     return l:ret
 endfunction " }}}
@@ -133,8 +132,8 @@ function! s:look_behind_for_bullet (lineobj) " {{{
         let l:ref_line = s:parse_line(l:row - 2)
     endif
 
-    if l:ref_line['bullet-type'] == s:NO_BULLET
-        " reference line is not a list item, nothing to reference
+    if get(l:ref_line, 'bullet-type', s:NO_BULLET) == s:NO_BULLET
+    " reference line is not a list item, nothing to reference
         if a:lineobj['bullet-type'] == s:OL_BULLET
             let a:lineobj['bullet-num'] = 1
         endif
@@ -179,7 +178,7 @@ function! s:look_behind_for_bullet (lineobj) " {{{
 endfunction " }}}
 
 function! s:toggle_bullet (lineobj) " {{{
-    if a:lineobj['bullet-type'] == s:NO_BULLET
+    if get(a:lineobj, 'bullet-type', s:NO_BULLET) == s:NO_BULLET
         let a:lineobj['bullet-type'] = s:UL_BULLET
 
     elseif a:lineobj['bullet-type'] == s:UL_BULLET
@@ -195,7 +194,7 @@ endfunction " }}}
 
 function! s:write_line (lineobj) " {{{
     let l:_ = a:lineobj
-    if l:_['bullet-type'] == s:NO_BULLET
+    if get(l:_, 'bullet-type', s:NO_BULLET) == s:NO_BULLET
         call setline(l:_['row'], l:_['pspace'] . l:_['text'])
     elseif l:_['bullet-type'] == s:UL_BULLET
         call setline(l:_['row'], l:_['pspace'] . s:get_ul_bullet(l:_) . l:_['text'])
@@ -233,7 +232,7 @@ endfunction " }}}
 function! rst#increase_indent () " {{{
     normal! >>
     let l:lineobj = s:parse_line('.')
-    if l:lineobj['bullet-type'] != s:NO_BULLET
+    if has_key(l:lineobj, 'bullet-type')
         call rst#set_bullet('>')
     endif
 endfunction " }}}
@@ -241,7 +240,7 @@ endfunction " }}}
 function! rst#decrease_indent () " {{{
     normal! <<
     let l:lineobj = s:parse_line('.')
-    if l:lineobj['bullet-type'] != s:NO_BULLET
+    if has_key(l:lineobj, 'bullet-type')
         call rst#set_bullet('<')
     endif
 endfunction " }}}
