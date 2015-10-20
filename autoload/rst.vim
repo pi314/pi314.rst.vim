@@ -144,8 +144,17 @@ function! s:look_behind_for_bullet (lineobj) " {{{
         let l:pspace = s:vwidth(a:lineobj['pspace'])
         let l:align = s:vwidth(l:ref_line['pspace'])
         let l:indent = s:vwidth(l:ref_line['origin']) - s:vwidth(l:ref_line['text'])
+        let l:myindent = s:vwidth(a:lineobj['origin']) - s:vwidth(a:lineobj['text'])
+
         if !s:monotone([l:align, l:pspace, l:indent])
-            if a:lineobj['bullet-type'] == s:OL_BULLET
+            " current line is out of align/indent range
+            if s:monotone([l:pspace, l:align, l:myindent])
+                if a:lineobj['follow'] == '>'
+                    let a:lineobj['pspace'] = repeat(' ', l:align)
+                elseif a:lineobj['follow'] == '<'
+                    let a:lineobj['pspace'] = repeat(' ', l:pspace - (l:myindent - l:align))
+                endif
+            elseif a:lineobj['bullet-type'] == s:OL_BULLET
                 let a:lineobj['bullet-num'] = 1
             endif
             return
@@ -153,8 +162,10 @@ function! s:look_behind_for_bullet (lineobj) " {{{
         elseif a:lineobj['follow'] == '<'
             " try to align to reference line
             let a:lineobj['pspace'] = repeat(' ', l:align)
-            let a:lineobj['bullet-type'] = s:OL_BULLET
-            let a:lineobj['bullet-num'] = l:ref_line['bullet-num'] + 1
+            let a:lineobj['bullet-type'] = l:ref_line['bullet-type']
+            if l:ref_line['bullet-type'] == s:OL_BULLET
+                let a:lineobj['bullet-num'] = l:ref_line['bullet-num'] + 1
+            endif
             return
 
         else
