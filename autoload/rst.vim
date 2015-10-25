@@ -2,6 +2,20 @@ let s:NO_BULLET = 0
 let s:OL_BULLET = 1
 let s:UL_BULLET = 2
 
+let s:cursor_row = -1
+let s:cursor_col = -1
+function! s:save_cursor_position () " {{{
+    let s:cursor_row = line('.')
+    let s:cursor_col = col('.')
+endfunction " }}}
+function! s:restore_cursor_position (...) " {{{
+    if a:0 == 0
+        call cursor(s:cursor_row, s:cursor_col)
+    elseif a:0 == 2
+        call cursor(s:cursor_row + a:1, s:cursor_col + a:2)
+    endif
+endfunction " }}}
+
 function! s:vwidth (s) " {{{
     return strdisplaywidth(a:s)
 endfunction " }}}
@@ -206,8 +220,7 @@ endfunction " }}}
 
 function! s:write_line (lineobj) " {{{
     let l:_ = a:lineobj
-    let l:row = line('.')
-    let l:col = col('.')
+    call s:save_cursor_position()
     if get(l:_, 'bullet-type', s:NO_BULLET) == s:NO_BULLET
         call setline(l:_['row'], l:_['pspace'] . l:_['text'])
     elseif l:_['bullet-type'] == s:UL_BULLET
@@ -215,10 +228,10 @@ function! s:write_line (lineobj) " {{{
     else
         call setline(l:_['row'], l:_['pspace'] . s:get_ol_bullet(l:_) . l:_['text'])
     endif
-    if l:row == l:_['row']
+    if l:_['row'] == line('.')
         let l:origin_len = s:vwidth(l:_['origin'])
         let l:new_len = s:vwidth(getline('.'))
-        call cursor(l:row, l:col + l:new_len - l:origin_len)
+        call s:restore_cursor_position(0, l:new_len - l:origin_len)
     endif
 endfunction " }}}
 
@@ -249,7 +262,10 @@ function! rst#remove_bullet () " {{{
 endfunction " }}}
 
 function! rst#increase_indent () " {{{
+    call s:save_cursor_position()
     normal! >>
+    call s:restore_cursor_position(0, &shiftwidth)
+
     let l:lineobj = s:parse_line('.')
     if has_key(l:lineobj, 'bullet-type')
         call rst#set_bullet('>')
@@ -257,7 +273,13 @@ function! rst#increase_indent () " {{{
 endfunction " }}}
 
 function! rst#decrease_indent () " {{{
+    call s:save_cursor_position()
+    let l:shift_offset = s:vwidth(getline('.'))
     normal! <<
+    let l:shift_offset = l:shift_offset - s:vwidth(getline('.'))
+    " restore cursor position
+    call s:restore_cursor_position(0, -l:shift_offset)
+
     let l:lineobj = s:parse_line('.')
     if has_key(l:lineobj, 'bullet-type')
         call rst#set_bullet('<')
