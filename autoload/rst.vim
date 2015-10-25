@@ -151,6 +151,7 @@ function! s:look_behind_for_bullet (lineobj) " {{{
             if s:monotone([l:pspace, l:align, l:myindent])
                 if a:lineobj['follow'] == '>'
                     let a:lineobj['pspace'] = repeat(' ', l:align)
+                    let a:lineobj['bullet-num'] = l:ref_line['bullet-num'] + 1
                 elseif a:lineobj['follow'] == '<'
                     let a:lineobj['pspace'] = repeat(' ', l:pspace - (l:myindent - l:align))
                 endif
