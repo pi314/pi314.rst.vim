@@ -257,8 +257,10 @@ endfunction " }}}
 
 function! rst#remove_bullet () " {{{
     let l:lineobj = s:parse_line('.')
-    unlet l:lineobj['bullet-type']
-    call s:write_line(l:lineobj)
+    if has_key(l:lineobj, 'bullet-type')
+        unlet l:lineobj['bullet-type']
+        call s:write_line(l:lineobj)
+    endif
 endfunction " }}}
 
 function! rst#increase_indent () " {{{
