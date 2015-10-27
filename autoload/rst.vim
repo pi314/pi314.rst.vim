@@ -168,6 +168,7 @@ function! s:look_behind_for_bullet (lineobj) " {{{
                     let a:lineobj['bullet-num'] = l:ref_line['bullet-num'] + 1
                 elseif a:lineobj['follow'] == '<'
                     let a:lineobj['pspace'] = repeat(' ', l:pspace - (l:myindent - l:align))
+                    let a:lineobj['bullet-num'] = 1
                 endif
             elseif a:lineobj['bullet-type'] == s:OL_BULLET
                 let a:lineobj['bullet-num'] = 1
