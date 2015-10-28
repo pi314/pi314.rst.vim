@@ -288,3 +288,22 @@ function! rst#decrease_indent () " {{{
         call rst#set_bullet('<')
     endif
 endfunction " }}}
+
+function! rst#carriage_return () " {{{
+    let l:lineobj = s:parse_line('.')
+    if !has_key(l:lineobj, 'bullet-type')
+        return "\<CR>"
+    endif
+
+    if l:lineobj['text'] ==# ''
+        let l:pre_clean = "\<ESC>0Di"
+        let l:post_clean = ""
+    elseif col('.') == strlen(l:lineobj['origin']) - strlen(l:lineobj['text']) + 1
+        let l:pre_clean = "\<C-o>d0i"
+        let l:post_clean = ""
+    else
+        let l:pre_clean = ""
+        let l:post_clean = "\<C-o>d0i"
+    endif
+    return l:pre_clean. "\<CR>". l:post_clean . l:lineobj['pspace'] ."\<C-o>:call rst#set_bullet()\<CR>"
+endfunction " }}}

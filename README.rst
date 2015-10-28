@@ -7,17 +7,12 @@ I like reStructuredText, but I can't get used to ``riv.vim``, so I wrote one.
 Usage
 -----
 
-* Titles
-
-  - ``t0`` ~ ``t6`` makes the current line as a rst title
-  - ``tj``, ``tk`` jumps between titles
-
 * Bullet/Enumerated Lists
 
   - ``<leader>b`` generates a new bulleted list item
   - ``<leader>b`` again switch it between bulleted/enumberated list item
   - ``<leader>B`` removes the bullet
-  - List item changes with indent
+  - Bullets change with indent
   - ``<CR>`` automatically generates a new list item
   - When cursor is on an list item, ``o`` creates a new item under it
 

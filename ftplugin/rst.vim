@@ -9,3 +9,6 @@ nnoremap <buffer> <silent> > :call rst#increase_indent()<CR>
 nnoremap <buffer> <silent> < :call rst#decrease_indent()<CR>
 vnoremap <buffer> <silent> > :call rst#increase_indent()<CR>gv
 vnoremap <buffer> <silent> < :call rst#decrease_indent()<CR>gv
+
+inoremap <buffer> <silent> <CR> <C-r>=rst#carriage_return()<CR>
+nnoremap <buffer> <silent> o A<C-r>=rst#carriage_return()<CR>
