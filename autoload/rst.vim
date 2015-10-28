@@ -295,15 +295,12 @@ function! rst#carriage_return () " {{{
         return "\<CR>"
     endif
 
-    if l:lineobj['text'] ==# ''
-        let l:pre_clean = "\<ESC>0Di"
-        let l:post_clean = ""
-    elseif col('.') == strlen(l:lineobj['origin']) - strlen(l:lineobj['text']) + 1
-        let l:pre_clean = "\<C-o>d0i"
-        let l:post_clean = ""
-    else
-        let l:pre_clean = ""
-        let l:post_clean = "\<C-o>d0i"
+    if col('.') == strlen(l:lineobj['origin']) - strlen(l:lineobj['text']) + 1
+        " l:lineobj['text'] == '' or cursor is at text start
+        " Just prepend an empty line
+        call append(line('.') - 1, '')
+        return ""
     endif
-    return l:pre_clean. "\<CR>". l:post_clean . l:lineobj['pspace'] ."\<C-o>:call rst#set_bullet()\<CR>"
+
+    return "\<CR>\<C-o>d0i" . l:lineobj['pspace'] ."\<C-o>:call rst#set_bullet()\<CR>"
 endfunction " }}}
