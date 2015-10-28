@@ -304,3 +304,13 @@ function! rst#carriage_return () " {{{
 
     return "\<CR>\<C-o>d0i" . l:lineobj['pspace'] ."\<C-o>:call rst#set_bullet()\<CR>"
 endfunction " }}}
+
+function! rst#move_cursor_to_line_start ()
+    let l:lineobj = s:parse_line('.')
+    let l:logic_line_start = strlen(l:lineobj['origin']) - strlen(l:lineobj['text']) + 1
+    if col('.') == l:logic_line_start
+        call cursor(line('.'), strlen(l:lineobj['pspace']) + 1)
+    else
+        call cursor(line('.'), l:logic_line_start)
+    endif
+endfunction
