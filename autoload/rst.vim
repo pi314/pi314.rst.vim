@@ -2,6 +2,8 @@ let s:NO_BULLET = 0
 let s:OL_BULLET = 1
 let s:UL_BULLET = 2
 
+let s:VALID_RST_SECTION_CHARS = "!\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~"
+
 let s:cursor_row = -1
 let s:cursor_col = -1
 function! s:save_cursor_position () " {{{
@@ -14,6 +16,12 @@ function! s:restore_cursor_position (...) " {{{
     elseif a:0 == 2
         call cursor(s:cursor_row + a:1, s:cursor_col + a:2)
     endif
+endfunction " }}}
+
+function! s:trim_right (lineobj) " {{{
+    let a:lineobj['origin'] = substitute(a:lineobj['origin'], '\v[ \n\r]*$', '', '')
+    let a:lineobj['text'] = substitute(a:lineobj['text'], '\v[ \n\r]*$', '', '')
+    return a:lineobj
 endfunction " }}}
 
 function! s:vwidth (s) " {{{
@@ -320,5 +328,92 @@ function! rst#move_cursor_to_line_start (...) range " {{{
         call cursor(line('.'), strlen(l:lineobj['pspace']) + 1)
     else
         call cursor(line('.'), l:logic_line_start)
+    endif
+endfunction " }}}
+
+function! s:is_title_line (text) " {{{
+    return a:text =~# '\v^(['. s:VALID_RST_SECTION_CHARS .'])\1*$'
+endfunction " }}}
+
+function! s:get_title_line (row) " {{{
+    let l:lineobj = s:trim_right(s:parse_line(a:row))
+    if strlen(l:lineobj['origin']) == 0
+        " cursor is on empty line, no need to check more
+        return l:lineobj
+    endif
+
+    if strlen(l:lineobj['text']) == 0
+        " this line is an empty list item, make it a normal text
+        let l:lineobj['text'] = l:lineobj['origin']
+        return l:lineobj
+    endif
+
+    if !s:is_title_line(l:lineobj['origin'])
+        " this line is not special, return it
+        return l:lineobj
+    endif
+
+    " this line is a title line, we have to check which line we are on
+    let l:last_lineobj = s:trim_right(s:parse_line(l:lineobj['row'] - 1))
+    echo l:last_lineobj
+    if s:is_title_line(l:last_lineobj['origin'])
+        " last line is also a title line?
+        " looks like the user screwed up the document, we won't handle it
+        return l:lineobj
+    endif
+
+    if l:last_lineobj['origin'] !=# ''
+        " last line is not an empty line, we found the title line
+        return l:last_lineobj
+    endif
+
+    " last line is an empty line, we should check for next 2 line
+    let l:next2_lineobj = s:trim_right(s:parse_line(l:lineobj['row'] + 2))
+    if s:is_title_line(l:next2_lineobj['origin'])
+        " next 2 line is a title line, we just assume the next line is the
+        " title line
+        return s:parse_line(l:lineobj['row'] + 1)
+    endif
+
+    " really don't know how to handle this situation
+    return l:lineobj
+endfunction " }}}
+
+function! rst#make_title (level) " {{{
+    if a:level < 1 || a:level > 6
+        return
+    endif
+
+    let l:lineobj = s:get_title_line('.')
+    let l:text_length = strlen(l:lineobj['text'])
+    if l:text_length == 0
+        " empty title? it doesn't make sense
+        return
+    endif
+
+    let l:title_line = repeat("=-`'.~*"[a:level - 1], l:text_length + a:level - 1)
+
+    let l:lastline_row = l:lineobj['row'] - 1
+    let l:lastline = getline(l:lastline_row)
+    if s:is_title_line(l:lastline)
+        " last line may be a level 1 title line, destroy it
+        execute "silent ". l:lastline_row .','. l:lastline_row .'delete _'
+        let l:lineobj['row'] -= 1
+    endif
+
+    if a:level == 1
+        " give you a pretty title
+        call append(l:lineobj['row'] - 1, l:title_line)
+        let l:lineobj['row'] += 1
+    endif
+
+    call setline(l:lineobj['row'], l:lineobj['text'])
+    let l:nextline = getline(l:lineobj['row'] + 1)
+    if s:is_title_line(l:nextline) || l:nextline ==# ''
+        " next line is a transition or title line, destroy it
+        call setline(l:lineobj['row'] + 1, l:title_line)
+    else
+        " next line is normal text, keep it
+        call append(l:lineobj['row'], l:title_line)
     endif
 endfunction " }}}
