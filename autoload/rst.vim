@@ -51,7 +51,11 @@ function! s:parse_line (row) " {{{
     " <pspace> <text>
 
     let l:ret = {}
-    let l:ret['row'] = line(a:row)
+    if type(a:row) == type(0)
+        let l:ret['row'] = a:row
+    else
+        let l:ret['row'] = line(a:row)
+    endif
     let l:line = getline(a:row)
     let l:ret['origin'] = l:line
 
