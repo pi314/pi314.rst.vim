@@ -305,7 +305,11 @@ function! rst#carriage_return () " {{{
     return "\<CR>\<C-o>d0i" . l:lineobj['pspace'] ."\<C-o>:call rst#set_bullet()\<CR>"
 endfunction " }}}
 
-function! rst#move_cursor_to_line_start ()
+function! rst#move_cursor_to_line_start (...) range " {{{
+    if a:0 == 1 && a:1 ==# 'v'
+        normal! gv
+    endif
+
     let l:lineobj = s:parse_line('.')
     let l:logic_line_start = strlen(l:lineobj['origin']) - strlen(l:lineobj['text']) + 1
     if col('.') == l:logic_line_start
@@ -313,4 +317,4 @@ function! rst#move_cursor_to_line_start ()
     else
         call cursor(line('.'), l:logic_line_start)
     endif
-endfunction
+endfunction " }}}

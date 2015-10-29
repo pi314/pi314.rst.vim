@@ -14,4 +14,5 @@ inoremap <buffer> <silent> <CR> <C-r>=rst#carriage_return()<CR>
 nnoremap <buffer> <silent> o A<C-r>=rst#carriage_return()<CR>
 
 nnoremap <buffer> <silent> ^ :call rst#move_cursor_to_line_start()<CR>
+vnoremap <buffer> <silent> ^ :call rst#move_cursor_to_line_start('v')<CR>
 nnoremap <buffer> <silent> I I<C-o>:call rst#move_cursor_to_line_start()<CR>
