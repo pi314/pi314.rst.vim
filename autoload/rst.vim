@@ -401,6 +401,13 @@ function! rst#make_title (level) " {{{
         let l:lineobj['row'] -= 1
     endif
 
+    if getline(l:lineobj['row'] - 1) !=# ''
+        " last line is neither title line, nor empty line
+        " we should insert an empty line
+        call append(l:lineobj['row'] - 1, '')
+        let l:lineobj['row'] += 1
+    endif
+
     if a:level == 1
         " give you a pretty title
         call append(l:lineobj['row'] - 1, l:title_line)
