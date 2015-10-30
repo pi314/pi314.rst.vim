@@ -27,3 +27,9 @@ nnoremap <buffer> <silent> tj :call rst#move_cursor_to_next_title()<CR>
 vnoremap <buffer> <silent> tj :call rst#move_cursor_to_next_title('v')<CR>
 nnoremap <buffer> <silent> tk :call rst#move_cursor_to_last_title()<CR>
 vnoremap <buffer> <silent> tk :call rst#move_cursor_to_last_title('v')<CR>
+
+inoremap <buffer> <silent> <C-t> <C-o>:call rst#increase_indent()<CR>
+inoremap <buffer> <silent> <C-d> <C-o>:call rst#decrease_indent()<CR>
+
+inoremap <buffer> <silent> <TAB> <C-r>=rst#tab()<CR>
+inoremap <buffer> <silent> <S-TAB> <C-o>:call rst#shift_tab()<CR>

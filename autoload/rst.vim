@@ -462,3 +462,21 @@ function! rst#move_cursor_to_last_title (...) range " {{{
         let l:row -= 1
     endwhile
 endfunction " }}}
+
+function! rst#tab() " {{{
+    let l:lineobj = s:parse_line('.')
+    let l:logic_line_start = strlen(l:lineobj['origin']) - strlen(l:lineobj['text']) + 1
+    if col('.') == l:logic_line_start
+        return "\<C-o>:call rst#increase_indent()\<CR>"
+    else
+        return "\<TAB>"
+    endif
+endfunction " }}}
+
+function! rst#shift_tab() " {{{
+    let l:lineobj = s:parse_line('.')
+    let l:logic_line_start = strlen(l:lineobj['origin']) - strlen(l:lineobj['text']) + 1
+    if col('.') == l:logic_line_start
+        call rst#decrease_indent()
+    endif
+endfunction " }}}
