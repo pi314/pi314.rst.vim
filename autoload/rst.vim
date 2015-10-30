@@ -424,3 +424,41 @@ function! rst#make_title (level) " {{{
         call append(l:lineobj['row'], l:title_line)
     endif
 endfunction " }}}
+
+function! rst#move_cursor_to_next_title (...) range " {{{
+    if a:0 == 1 && a:1 ==# 'v'
+        normal! gv
+    endif
+
+    let l:row = line('.') + 2
+    while l:row < line('$')
+        let l:line = getline(l:row)
+        if s:is_title_line(l:line)
+            let l:lastline = getline(l:row - 1)
+            if l:lastline !=# ''
+                call cursor(l:row - 1, 1)
+                return
+            endif
+        endif
+        let l:row += 1
+    endwhile
+endfunction " }}}
+
+function! rst#move_cursor_to_last_title (...) range " {{{
+    if a:0 == 1 && a:1 ==# 'v'
+        normal! gv
+    endif
+
+    let l:row = line('.') - 1
+    while l:row > 0
+        let l:line = getline(l:row)
+        if s:is_title_line(l:line)
+            let l:lastline = getline(l:row - 1)
+            if l:lastline !=# ''
+                call cursor(l:row - 1, 1)
+                return
+            endif
+        endif
+        let l:row -= 1
+    endwhile
+endfunction " }}}

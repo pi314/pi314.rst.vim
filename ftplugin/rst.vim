@@ -22,3 +22,8 @@ nnoremap <buffer> <silent> t0 o<ESC>0D8i-<ESC>0
 for s:level in range(1, 6)
     execute "nnoremap <buffer> <silent> t". s:level ." :call rst#make_title(". s:level .")<CR>"
 endfor
+
+nnoremap <buffer> <silent> tj :call rst#move_cursor_to_next_title()<CR>
+vnoremap <buffer> <silent> tj :call rst#move_cursor_to_next_title('v')<CR>
+nnoremap <buffer> <silent> tk :call rst#move_cursor_to_last_title()<CR>
+vnoremap <buffer> <silent> tk :call rst#move_cursor_to_last_title('v')<CR>

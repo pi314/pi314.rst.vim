@@ -7,6 +7,11 @@ I like reStructuredText, but I can't get used to ``riv.vim``, so I wrote one.
 Usage
 -----
 
+* Titles (Sections)
+
+  - ``tj`` jumps down by one rst section
+  - ``tk`` jumps up by one rst section
+
 * Bullet/Enumerated Lists
 
   - ``<leader>b`` generates a new bulleted list item
