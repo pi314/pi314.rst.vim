@@ -464,6 +464,10 @@ endfunction " }}}
 
 function! rst#tab() " {{{
     let l:lineobj = s:parse_line('.')
+    if !has_key(l:lineobj, 'bullet-type')
+        return "\<TAB>"
+    endif
+
     let l:logic_line_start = strlen(l:lineobj['origin']) - strlen(l:lineobj['text']) + 1
     if col('.') == l:logic_line_start
         return "\<C-o>:call rst#increase_indent()\<CR>"
