@@ -355,7 +355,6 @@ function! s:get_title_line (row) " {{{
 
     " this line is a title line, we have to check which line we are on
     let l:last_lineobj = s:trim_right(s:parse_line(l:lineobj['row'] - 1))
-    echo l:last_lineobj
     if s:is_title_line(l:last_lineobj['origin'])
         " last line is also a title line?
         " looks like the user screwed up the document, we won't handle it
