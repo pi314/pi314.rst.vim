@@ -384,7 +384,7 @@ function! rst#make_title (level) " {{{
     endif
 
     let l:lineobj = s:get_title_line('.')
-    let l:text_length = strlen(l:lineobj['text'])
+    let l:text_length = s:vwidth(l:lineobj['text'])
     if l:text_length == 0
         " empty title? it doesn't make sense
         return
