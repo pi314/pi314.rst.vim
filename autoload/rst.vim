@@ -430,7 +430,7 @@ function! rst#move_cursor_to_next_title (...) range " {{{
     endif
 
     let l:row = line('.') + 2
-    while l:row < line('$')
+    while l:row <= line('$')
         let l:line = getline(l:row)
         if s:is_title_line(l:line)
             let l:lastline = getline(l:row - 1)
