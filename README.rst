@@ -11,6 +11,8 @@ Usage
 
   - ``tj`` jumps down by one rst section
   - ``tk`` jumps up by one rst section
+  - ``t1`` ~ ``t6`` makes current line a rst section (add a line under current line)
+  - ``t0`` generates a transition (a separate line)
 
 * Bullet/Enumerated Lists
 
@@ -24,6 +26,11 @@ Usage
 * Indenting
 
   - ``<``, ``>`` changes the indent
+  - ``<TAB>``, ``<S-TAB>`` changes the indent when cursor is on logical line start
+
+* Edit support
+
+  - ``^``, ``I`` moves cursor to a logical line start
 
 My rst reference: http://docutils.sourceforge.net/docs/user/rst/quickref.html
 
