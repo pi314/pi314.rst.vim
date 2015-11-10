@@ -28,6 +28,16 @@ function! s:vwidth (s) " {{{
     return strdisplaywidth(a:s)
 endfunction " }}}
 
+function! s:endswith (str, pattern) " {{{
+    let l:str_len = strlen(a:str)
+    let l:pattern_len = strlen(a:pattern)
+    if l:str_len < l:pattern_len
+        return 0
+    endif
+
+    return (a:str[(l:str_len - l:pattern_len):] ==# a:pattern)
+endfunction " }}}
+
 function! s:map (func, operand) " {{{
     if type(a:func) != type(function('tr'))
         return []
@@ -304,6 +314,12 @@ endfunction " }}}
 function! rst#carriage_return () " {{{
     let l:lineobj = s:parse_line('.')
     if !has_key(l:lineobj, 'bullet-type')
+        " current line is not a list item
+
+        " here comes a literal block
+        if s:endswith(l:lineobj['origin'], '::')
+            return "\<CR>\<CR>". repeat(' ', &softtabstop)
+        endif
         return "\<CR>"
     endif
 
@@ -314,7 +330,14 @@ function! rst#carriage_return () " {{{
         return ""
     endif
 
-    return "\<CR>\<C-o>d0i" . l:lineobj['pspace'] ."\<C-o>:call rst#set_bullet()\<CR>"
+    " here comes a literal block
+    if s:endswith(l:lineobj['origin'], '::')
+        return "\<CR>\<CR>\<ESC>d0i" .
+            \repeat(' ',
+            \s:vwidth(l:lineobj['origin']) - s:vwidth(l:lineobj['text']) + &softtabstop)
+    endif
+
+    return "\<CR>\<ESC>d0i" . l:lineobj['pspace'] ."\<C-\>\<C-o>:call rst#set_bullet()\<CR>"
 endfunction " }}}
 
 function! rst#move_cursor_to_line_start (...) range " {{{
@@ -470,7 +493,7 @@ function! rst#tab() " {{{
 
     let l:logic_line_start = strlen(l:lineobj['origin']) - strlen(l:lineobj['text']) + 1
     if col('.') == l:logic_line_start
-        return "\<C-o>:call rst#increase_indent()\<CR>"
+        return "\<C-\>\<C-o>:call rst#increase_indent()\<CR>"
     else
         return "\<TAB>"
     endif
