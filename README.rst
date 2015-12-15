@@ -7,22 +7,30 @@ I like reStructuredText, but I can't get used to ``riv.vim``, so I wrote one.
 Usage
 -----
 
-* Titles
+* Titles (Sections)
 
-  - ``t0`` ~ ``t6`` makes the current line as a rst title
-  - ``tj``, ``tk`` jumps between titles
+  - ``tj`` jumps down by one rst section
+  - ``tk`` jumps up by one rst section
+  - ``t1`` ~ ``t6`` makes current line a rst section (add a line under current line)
+  - ``t0`` generates a transition (a separate line)
 
 * Bullet/Enumerated Lists
 
   - ``<leader>b`` generates a new bulleted list item
   - ``<leader>b`` again switch it between bulleted/enumberated list item
-  - List item changes with indent
+  - ``<leader>B`` removes the bullet
+  - Bullets change with indent
   - ``<CR>`` automatically generates a new list item
   - When cursor is on an list item, ``o`` creates a new item under it
 
 * Indenting
 
   - ``<``, ``>`` changes the indent
+  - ``<TAB>``, ``<S-TAB>`` changes the indent when cursor is on logical line start
+
+* Edit support
+
+  - ``^``, ``I`` moves cursor to a logical line start
 
 My rst reference: http://docutils.sourceforge.net/docs/user/rst/quickref.html
 
