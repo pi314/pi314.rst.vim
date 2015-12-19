@@ -337,7 +337,7 @@ function! rst#carriage_return () " {{{
             \s:vwidth(l:lineobj['origin']) - s:vwidth(l:lineobj['text']) + &softtabstop)
     endif
 
-    return "\<CR>\<ESC>d0i" . l:lineobj['pspace'] ."\<C-\>\<C-o>:call rst#set_bullet()\<CR>"
+    return "\<CR>\<ESC>d0i" . l:lineobj['pspace'] ."\<ESC>:call rst#set_bullet()\<CR>^Wi"
 endfunction " }}}
 
 function! rst#move_cursor_to_line_start (...) range " {{{
