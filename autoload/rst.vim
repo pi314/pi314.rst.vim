@@ -506,3 +506,12 @@ function! rst#shift_tab() " {{{
         call rst#decrease_indent()
     endif
 endfunction " }}}
+
+function! rst#join_two_lines () " {{{
+    let l:nln = line('.') + 1
+    if l:nln <= line('$')
+        let l:lineobj = s:parse_line(l:nln)
+        call setline(l:nln, l:lineobj['text'])
+        normal! J
+    endif
+endfunction " }}}

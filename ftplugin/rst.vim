@@ -16,6 +16,7 @@ nnoremap <buffer> <silent> o A<C-r>=rst#carriage_return()<CR>
 nnoremap <buffer> <silent> ^ :call rst#move_cursor_to_line_start()<CR>
 vnoremap <buffer> <silent> ^ :call rst#move_cursor_to_line_start('v')<CR>
 nnoremap <buffer> <silent> I I<C-\><C-o>:call rst#move_cursor_to_line_start()<CR>
+nnoremap <buffer> <silent> J :call rst#join_two_lines()<CR>
 
 nnoremap <buffer> <silent> t0 o<ESC>0D8i-<ESC>0
 

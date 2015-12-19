@@ -31,6 +31,7 @@ Usage
 * Edit support
 
   - ``^``, ``I`` moves cursor to a logical line start
+  - ``J`` joins two line without keeping second line's bullet
 
 My rst reference: http://docutils.sourceforge.net/docs/user/rst/quickref.html
 
