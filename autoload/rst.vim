@@ -81,25 +81,29 @@ function! s:parse_line (row) " {{{
     let l:matchobj = matchlist(l:line, '\v(^ *)([-*+])( +)(.*$)')
     if l:matchobj != []
         let l:ret['pspace'] = l:matchobj[1]
-        let l:ret['bullet-type'] = s:UL_BULLET
+        let l:ret['btype'] = s:UL_BULLET
         let l:ret['bspace'] = l:matchobj[3]
         let l:ret['text'] = l:matchobj[4]
         return l:ret
     endif
 
-    " bullet n.  a.  A.  #.
+    " bullet 1.  a.  A.  #.
     let l:matchobj = matchlist(l:line, '\v(^ *)(\d+|[a-zA-Z]+|#)\.( +)(.*$)')
     if l:matchobj != []
         let l:ret['pspace'] = l:matchobj[1]
-        let l:ret['bullet-type'] = s:OL_BULLET
+        let l:ret['btype'] = s:OL_BULLET
         if l:matchobj[2] =~# '\v\d+'
-            let l:ret['bullet-num'] = str2nr(l:matchobj[2])
+            let l:ret['bnum'] = str2nr(l:matchobj[2])
+            let l:ret['bformat'] = '1.'
         elseif l:matchobj[2] =~# '\v[a-z]+'
-            let l:ret['bullet-num'] = char2nr(l:matchobj[2]) - char2nr('a') + 1
+            let l:ret['bnum'] = char2nr(l:matchobj[2]) - char2nr('a') + 1
+            let l:ret['bformat'] = 'a.'
         elseif l:matchobj[2] =~# '\v[A-Z]+'
-            let l:ret['bullet-num'] = char2nr(l:matchobj[2]) - char2nr('A') + 1
+            let l:ret['bnum'] = char2nr(l:matchobj[2]) - char2nr('A') + 1
+            let l:ret['bformat'] = 'A.'
         elseif l:matchobj[2] ==# '#'
-            let l:ret['bullet-num'] = 0
+            let l:ret['bnum'] = 0
+            let l:ret['bformat'] = '#.'
         endif
         let l:ret['bspace'] = l:matchobj[3]
         let l:ret['text'] = l:matchobj[4]
@@ -107,21 +111,26 @@ function! s:parse_line (row) " {{{
     endif
 
     " bullet 1)  a)  A)  #)  (1)  (a)  (A)  (#)
-    let l:matchobj = matchlist(l:line, '\v(^ *)\(?(\d+|[a-zA-Z]+|#)\)( +)(.*$)')
+    let l:matchobj = matchlist(l:line, '\v(^ *)(\(?)(\d+|[a-zA-Z]+|#)\)( +)(.*$)')
     if l:matchobj != []
         let l:ret['pspace'] = l:matchobj[1]
-        let l:ret['bullet-type'] = s:OL_BULLET
-        if l:matchobj[2] =~# '\v\d+'
-            let l:ret['bullet-num'] = str2nr(l:matchobj[2])
-        elseif l:matchobj[2] =~# '\v[a-z]+'
-            let l:ret['bullet-num'] = char2nr(l:matchobj[2]) - char2nr('a') + 1
-        elseif l:matchobj[2] =~# '\v[A-Z]+'
-            let l:ret['bullet-num'] = char2nr(l:matchobj[2]) - char2nr('A') + 1
-        elseif l:matchobj[2] ==# '#'
-            let l:ret['bullet-num'] = 0
+        let l:ret['btype'] = s:OL_BULLET
+        let l:ret['bformat'] = l:matchobj[2]
+        if l:matchobj[3] =~# '\v\d+'
+            let l:ret['bnum'] = str2nr(l:matchobj[3])
+            let l:ret['bformat'] .= '1)'
+        elseif l:matchobj[3] =~# '\v[a-z]+'
+            let l:ret['bnum'] = char2nr(l:matchobj[3]) - char2nr('a') + 1
+            let l:ret['bformat'] .= 'a)'
+        elseif l:matchobj[3] =~# '\v[A-Z]+'
+            let l:ret['bnum'] = char2nr(l:matchobj[3]) - char2nr('A') + 1
+            let l:ret['bformat'] .= 'A)'
+        elseif l:matchobj[3] ==# '#'
+            let l:ret['bnum'] = 0
+            let l:ret['bformat'] .= '#)'
         endif
-        let l:ret['bspace'] = l:matchobj[3]
-        let l:ret['text'] = l:matchobj[4]
+        let l:ret['bspace'] = l:matchobj[4]
+        let l:ret['text'] = l:matchobj[5]
         return l:ret
     endif
 
@@ -145,12 +154,23 @@ endfunction " }}}
 function! s:get_ol_bullet (lineobj) " {{{
     let l:pspace = a:lineobj['pspace']
     let l:level = (s:vwidth(l:pspace) / &softtabstop) % 3
-    if l:level == 0
-        let l:bullet = a:lineobj['bullet-num'] .'.'
+    if has_key(a:lineobj, 'bformat')
+        echom a:lineobj['bformat']
+        if a:lineobj['bformat'] =~# '1'
+            let l:bullet = substitute(a:lineobj['bformat'], '1', a:lineobj['bnum'], '')
+        elseif a:lineobj['bformat'] =~# 'a'
+            let l:bullet = substitute(a:lineobj['bformat'], 'a', nr2char(a:lineobj['bnum'] + char2nr('a') - 1), '')
+        elseif a:lineobj['bformat'] =~# 'A'
+            let l:bullet = substitute(a:lineobj['bformat'], 'A', nr2char(a:lineobj['bnum'] + char2nr('A') - 1), '')
+        else
+            let l:bullet = a:lineobj['bformat']
+        endif
+    elseif l:level == 0
+        let l:bullet = a:lineobj['bnum'] .'.'
     elseif l:level == 1
-        let l:bullet = nr2char(a:lineobj['bullet-num'] + char2nr('A') - 1) .')'
+        let l:bullet = nr2char(a:lineobj['bnum'] + char2nr('A') - 1) .')'
     elseif l:level == 2
-        let l:bullet = '('. nr2char(a:lineobj['bullet-num'] + char2nr('a') - 1) .')'
+        let l:bullet = '('. nr2char(a:lineobj['bnum'] + char2nr('a') - 1) .')'
     endif
     return l:bullet . s:get_bspace(l:bullet)
 endfunction " }}}
@@ -168,10 +188,10 @@ function! s:look_behind_for_bullet (lineobj) " {{{
         let l:ref_line = s:parse_line(l:row - 2)
     endif
 
-    if get(l:ref_line, 'bullet-type', s:NO_BULLET) == s:NO_BULLET
-    " reference line is not a list item, nothing to reference
-        if a:lineobj['bullet-type'] == s:OL_BULLET
-            let a:lineobj['bullet-num'] = 1
+    if get(l:ref_line, 'btype', s:NO_BULLET) == s:NO_BULLET
+        " reference line is not a list item, nothing to reference
+        if a:lineobj['btype'] == s:OL_BULLET
+            let a:lineobj['bnum'] = 1
         endif
         return
 
@@ -187,56 +207,59 @@ function! s:look_behind_for_bullet (lineobj) " {{{
             if s:monotone([l:pspace, l:align, l:myindent])
                 if a:lineobj['follow'] == '>'
                     let a:lineobj['pspace'] = repeat(' ', l:align)
-                    let a:lineobj['bullet-num'] = l:ref_line['bullet-num'] + 1
+                    let a:lineobj['bnum'] = l:ref_line['bnum'] + 1
                 elseif a:lineobj['follow'] == '<'
                     let a:lineobj['pspace'] = repeat(' ', l:pspace - (l:myindent - l:align))
-                    let a:lineobj['bullet-num'] = 1
+                    let a:lineobj['bnum'] = 1
                 endif
-            elseif a:lineobj['bullet-type'] == s:OL_BULLET
-                let a:lineobj['bullet-num'] = 1
+            elseif a:lineobj['btype'] == s:OL_BULLET
+                let a:lineobj['bnum'] = 1
             endif
             return
 
         elseif a:lineobj['follow'] == '<'
             " try to align to reference line
             let a:lineobj['pspace'] = repeat(' ', l:align)
-            let a:lineobj['bullet-type'] = l:ref_line['bullet-type']
-            if l:ref_line['bullet-type'] == s:OL_BULLET
-                let a:lineobj['bullet-num'] = l:ref_line['bullet-num'] + 1
+            let a:lineobj['btype'] = l:ref_line['btype']
+            if l:ref_line['btype'] == s:OL_BULLET
+                let a:lineobj['bnum'] = l:ref_line['bnum'] + 1
             endif
             return
 
         else
             " try to indent to reference line
             let a:lineobj['pspace'] = repeat(' ', l:indent)
-            let a:lineobj['bullet-type'] = s:OL_BULLET
-            let a:lineobj['bullet-num'] = 1
+            let a:lineobj['btype'] = s:OL_BULLET
+            let a:lineobj['bnum'] = 1
             return
 
         endif
 
-    elseif l:ref_line['bullet-type'] == s:OL_BULLET
+    elseif l:ref_line['btype'] == s:OL_BULLET
         " reference line is an ordered list item
-        let a:lineobj['bullet-type'] = s:OL_BULLET
-        let a:lineobj['bullet-num'] = l:ref_line['bullet-num'] + 1
+        let a:lineobj['btype'] = s:OL_BULLET
+        let a:lineobj['bnum'] = l:ref_line['bnum'] + 1
+        if has_key(l:ref_line, 'bformat')
+            let a:lineobj['bformat'] = l:ref_line['bformat']
+        endif
         return
     endif
 
     " reference line is an unordered list item
-    let a:lineobj['bullet-type'] = s:UL_BULLET
+    let a:lineobj['btype'] = s:UL_BULLET
 endfunction " }}}
 
 function! s:toggle_bullet (lineobj) " {{{
-    if get(a:lineobj, 'bullet-type', s:NO_BULLET) == s:NO_BULLET
-        let a:lineobj['bullet-type'] = s:UL_BULLET
+    if get(a:lineobj, 'btype', s:NO_BULLET) == s:NO_BULLET
+        let a:lineobj['btype'] = s:UL_BULLET
 
-    elseif a:lineobj['bullet-type'] == s:UL_BULLET
-        let a:lineobj['bullet-type'] = s:OL_BULLET
-        let a:lineobj['bullet-num'] = 1
+    elseif a:lineobj['btype'] == s:UL_BULLET
+        let a:lineobj['btype'] = s:OL_BULLET
+        let a:lineobj['bnum'] = 1
 
-    elseif a:lineobj['bullet-type'] == s:OL_BULLET
-        let a:lineobj['bullet-type'] = s:UL_BULLET
-        unlet a:lineobj['bullet-num']
+    elseif a:lineobj['btype'] == s:OL_BULLET
+        let a:lineobj['btype'] = s:UL_BULLET
+        unlet a:lineobj['bnum']
 
     endif
 endfunction " }}}
@@ -244,9 +267,9 @@ endfunction " }}}
 function! s:write_line (lineobj) " {{{
     let l:_ = a:lineobj
     call s:save_cursor_position()
-    if get(l:_, 'bullet-type', s:NO_BULLET) == s:NO_BULLET
+    if get(l:_, 'btype', s:NO_BULLET) == s:NO_BULLET
         call setline(l:_['row'], l:_['pspace'] . l:_['text'])
-    elseif l:_['bullet-type'] == s:UL_BULLET
+    elseif l:_['btype'] == s:UL_BULLET
         call setline(l:_['row'], l:_['pspace'] . s:get_ul_bullet(l:_) . l:_['text'])
     else
         call setline(l:_['row'], l:_['pspace'] . s:get_ol_bullet(l:_) . l:_['text'])
@@ -280,8 +303,8 @@ endfunction " }}}
 
 function! rst#remove_bullet () " {{{
     let l:lineobj = s:parse_line('.')
-    if has_key(l:lineobj, 'bullet-type')
-        unlet l:lineobj['bullet-type']
+    if has_key(l:lineobj, 'btype')
+        unlet l:lineobj['btype']
         call s:write_line(l:lineobj)
     endif
 endfunction " }}}
@@ -292,7 +315,7 @@ function! rst#increase_indent () " {{{
     call s:restore_cursor_position(0, &shiftwidth)
 
     let l:lineobj = s:parse_line('.')
-    if has_key(l:lineobj, 'bullet-type')
+    if has_key(l:lineobj, 'btype')
         call rst#set_bullet('>')
     endif
 endfunction " }}}
@@ -306,14 +329,14 @@ function! rst#decrease_indent () " {{{
     call s:restore_cursor_position(0, -l:shift_offset)
 
     let l:lineobj = s:parse_line('.')
-    if has_key(l:lineobj, 'bullet-type')
+    if has_key(l:lineobj, 'btype')
         call rst#set_bullet('<')
     endif
 endfunction " }}}
 
 function! rst#carriage_return () " {{{
     let l:lineobj = s:parse_line('.')
-    if !has_key(l:lineobj, 'bullet-type')
+    if !has_key(l:lineobj, 'btype')
         " current line is not a list item
 
         " here comes a literal block
@@ -487,7 +510,7 @@ endfunction " }}}
 
 function! rst#tab() " {{{
     let l:lineobj = s:parse_line('.')
-    if !has_key(l:lineobj, 'bullet-type')
+    if !has_key(l:lineobj, 'btype')
         return "\<TAB>"
     endif
 
