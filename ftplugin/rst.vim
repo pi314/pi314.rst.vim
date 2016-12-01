@@ -5,6 +5,8 @@ nnoremap <buffer> <silent> <leader>B :call rst#remove_bullet()<CR>
 vnoremap <buffer> <silent> <leader>B :call rst#remove_bullet()<CR>gv
 inoremap <buffer> <silent> <leader>B <C-\><C-o>:call rst#remove_bullet()<CR>
 
+vnoremap <buffer> <silent> <leader>l xi`<C-o>p<SPACE><LT>>`_<LEFT><LEFT><LEFT>
+
 nnoremap <buffer> <silent> > :call rst#increase_indent()<CR>
 nnoremap <buffer> <silent> < :call rst#decrease_indent()<CR>
 vnoremap <buffer> <silent> > :call rst#increase_indent()<CR>gv
