@@ -145,109 +145,128 @@ function! s:get_bspace (bullet) " {{{
     return repeat(' ', &softtabstop - (s:vwidth(a:bullet) % &softtabstop))
 endfunction " }}}
 
-function! s:get_ul_bullet (lineobj) " {{{
-    let l:pspace = a:lineobj['pspace']
-    let l:bullet = ['*', '-', '+'][(s:vwidth(l:pspace) / &softtabstop) % 3]
-    return l:bullet . s:get_bspace(l:bullet)
-endfunction " }}}
+function! s:get_bullet_str (lineobj) " {{{
+    if !has_key(a:lineobj, 'btype')
+        return ''
 
-function! s:get_ol_bullet (lineobj) " {{{
-    let l:pspace = a:lineobj['pspace']
-    let l:level = (s:vwidth(l:pspace) / &softtabstop) % 3
-    if has_key(a:lineobj, 'bformat')
-        echom a:lineobj['bformat']
-        if a:lineobj['bformat'] =~# '1'
-            let l:bullet = substitute(a:lineobj['bformat'], '1', a:lineobj['bnum'], '')
-        elseif a:lineobj['bformat'] =~# 'a'
-            let l:bullet = substitute(a:lineobj['bformat'], 'a', nr2char(a:lineobj['bnum'] + char2nr('a') - 1), '')
-        elseif a:lineobj['bformat'] =~# 'A'
-            let l:bullet = substitute(a:lineobj['bformat'], 'A', nr2char(a:lineobj['bnum'] + char2nr('A') - 1), '')
-        else
-            let l:bullet = a:lineobj['bformat']
-        endif
-    elseif l:level == 0
-        let l:bullet = a:lineobj['bnum'] .'.'
-    elseif l:level == 1
-        let l:bullet = nr2char(a:lineobj['bnum'] + char2nr('A') - 1) .')'
-    elseif l:level == 2
-        let l:bullet = '('. nr2char(a:lineobj['bnum'] + char2nr('a') - 1) .')'
-    endif
-    return l:bullet . s:get_bspace(l:bullet)
-endfunction " }}}
+    elseif a:lineobj['btype'] == s:UL_BULLET
+        let l:pspace = a:lineobj['pspace']
+        let l:bullet = ['*', '-', '+'][(s:vwidth(l:pspace) / &softtabstop) % 3]
+        return l:bullet . s:get_bspace(l:bullet)
 
-function! s:look_behind_for_bullet (lineobj) " {{{
-    let l:row = a:lineobj['row']
-    if l:row == 1
-        return
-    endif
-
-    " check last line for bullet type reference
-    let l:ref_line = s:parse_line(l:row - 1)
-    if l:ref_line['text'] ==# '' && l:row > 2
-        " last line is empty, get one more line
-        let l:ref_line = s:parse_line(l:row - 2)
-    endif
-
-    if get(l:ref_line, 'btype', s:NO_BULLET) == s:NO_BULLET
-        " reference line is not a list item, nothing to reference
-        if a:lineobj['btype'] == s:OL_BULLET
-            let a:lineobj['bnum'] = 1
-        endif
-        return
-
-    elseif l:ref_line['pspace'] != a:lineobj['pspace']
-        " reference line is a list item, but pspace is not the same
-        let l:pspace = s:vwidth(a:lineobj['pspace'])
-        let l:align = s:vwidth(l:ref_line['pspace'])
-        let l:indent = s:vwidth(l:ref_line['origin']) - s:vwidth(l:ref_line['text'])
-        let l:myindent = s:vwidth(a:lineobj['origin']) - s:vwidth(a:lineobj['text'])
-
-        if !s:monotone([l:align, l:pspace, l:indent])
-            " current line is out of align/indent range
-            if s:monotone([l:pspace, l:align, l:myindent])
-                if a:lineobj['follow'] == '>'
-                    let a:lineobj['pspace'] = repeat(' ', l:align)
-                    let a:lineobj['bnum'] = l:ref_line['bnum'] + 1
-                elseif a:lineobj['follow'] == '<'
-                    let a:lineobj['pspace'] = repeat(' ', l:pspace - (l:myindent - l:align))
-                    let a:lineobj['bnum'] = 1
-                endif
-            elseif a:lineobj['btype'] == s:OL_BULLET
-                let a:lineobj['bnum'] = 1
+    elseif a:lineobj['btype'] == s:OL_BULLET
+        let l:pspace = a:lineobj['pspace']
+        let l:level = (s:vwidth(l:pspace) / &softtabstop) % 3
+        if has_key(a:lineobj, 'bformat')
+            if a:lineobj['bformat'] =~# '1'
+                let l:bullet = substitute(a:lineobj['bformat'], '1', a:lineobj['bnum'], '')
+            elseif a:lineobj['bformat'] =~# 'a'
+                let l:bullet = substitute(a:lineobj['bformat'], 'a', nr2char(a:lineobj['bnum'] + char2nr('a') - 1), '')
+            elseif a:lineobj['bformat'] =~# 'A'
+                let l:bullet = substitute(a:lineobj['bformat'], 'A', nr2char(a:lineobj['bnum'] + char2nr('A') - 1), '')
+            else
+                let l:bullet = a:lineobj['bformat']
             endif
-            return
-
-        elseif a:lineobj['follow'] == '<'
-            " try to align to reference line
-            let a:lineobj['pspace'] = repeat(' ', l:align)
-            let a:lineobj['btype'] = l:ref_line['btype']
-            if l:ref_line['btype'] == s:OL_BULLET
-                let a:lineobj['bnum'] = l:ref_line['bnum'] + 1
-            endif
-            return
-
-        else
-            " try to indent to reference line
-            let a:lineobj['pspace'] = repeat(' ', l:indent)
-            let a:lineobj['btype'] = s:OL_BULLET
-            let a:lineobj['bnum'] = 1
-            return
-
+        elseif l:level == 0
+            let l:bullet = a:lineobj['bnum'] .'.'
+        elseif l:level == 1
+            let l:bullet = nr2char(a:lineobj['bnum'] + char2nr('A') - 1) .')'
+        elseif l:level == 2
+            let l:bullet = '('. nr2char(a:lineobj['bnum'] + char2nr('a') - 1) .')'
         endif
+        return l:bullet . s:get_bspace(l:bullet)
+    endif
+endfunction " }}}
 
-    elseif l:ref_line['btype'] == s:OL_BULLET
-        " reference line is an ordered list item
-        let a:lineobj['btype'] = s:OL_BULLET
-        let a:lineobj['bnum'] = l:ref_line['bnum'] + 1
-        if has_key(l:ref_line, 'bformat')
-            let a:lineobj['bformat'] = l:ref_line['bformat']
-        endif
+function! s:unify_bullet (lineobj, alignment)
+    if !has_key(a:lineobj, 'btype')
         return
     endif
 
-    " reference line is an unordered list item
-    let a:lineobj['btype'] = s:UL_BULLET
-endfunction " }}}
+    let l:row = a:lineobj['row'] - 1
+    let l:empty_line_flag = 0
+    let l:condition = 'UNKNOWN'
+    while l:row >= 1
+        let l:ref_lineobj = s:parse_line(l:row)
+        if l:ref_lineobj['origin'] =~? '^ *$'
+            " empty line
+            if l:empty_line_flag == 0
+                let l:empty_line_flag = 1
+            else
+                " two consecutive empty lines
+                let l:condition = 'RESET_BULLET'
+                break
+            endif
+
+        elseif has_key(l:ref_lineobj, 'btype')
+            let l:empty_line_flag = 0
+            let l:align_point_1 = s:vwidth(l:ref_lineobj['pspace'])
+            let l:align_point_2 = s:vwidth(l:ref_lineobj['origin']) - s:vwidth(l:ref_lineobj['text'])
+            " a bulleted item
+            if s:vwidth(l:ref_lineobj['pspace']) == s:vwidth(a:lineobj['pspace'])
+                " same indent, follow it
+                let l:condition = 'FOLLOW'
+                break
+
+            elseif s:vwidth(l:ref_lineobj['pspace']) > s:vwidth(a:lineobj['pspace'])
+                " greater indent bulleted list item, maybe it's belong to a
+                " higher list, so keep searching
+
+            elseif a:alignment == '<' && s:monotone([
+                        \ l:align_point_1,
+                        \ s:vwidth(a:lineobj['pspace']),
+                        \ l:align_point_2])
+                " oh, my indent is between that line's pspace and text
+                " follow it
+                let l:condition = 'FOLLOW'
+                break
+
+            elseif a:alignment == '>' && s:monotone([
+                        \ l:align_point_1,
+                        \ s:vwidth(a:lineobj['pspace']),
+                        \ l:align_point_2])
+                " oh, my indent is between that line's pspace and text,
+                " need to indent more and reset
+                let a:lineobj['pspace'] = repeat(' ', l:align_point_2)
+                let l:condition = 'RESET_BULLET'
+                break
+
+            else
+                " less indent bulleted list item, I'm either its subitem or no
+                " relation, so reset bullet
+                let l:condition = 'RESET_BULLET'
+                break
+
+            endif
+
+        else
+            let l:empty_line_flag = 0
+            " found a normal line, set bullet number to 1
+            let l:condition = 'RESET_BULLET'
+            break
+
+        endif
+
+        let l:row -= 1
+    endwhile
+
+    if l:condition == 'RESET_BULLET'
+        let a:lineobj['bnum'] = 1
+
+    elseif l:condition == 'FOLLOW'
+        let a:lineobj['pspace'] = l:ref_lineobj['pspace']
+        let a:lineobj['btype'] = l:ref_lineobj['btype']
+        if l:ref_lineobj['btype'] == s:OL_BULLET
+            let a:lineobj['bformat'] = l:ref_lineobj['bformat']
+            let a:lineobj['bnum'] = l:ref_lineobj['bnum'] + 1
+        endif
+
+    else
+        echom 's:unify_bullet():'. l:condition
+
+    endif
+endfunction
+
 
 function! s:toggle_bullet (lineobj) " {{{
     if get(a:lineobj, 'btype', s:NO_BULLET) == s:NO_BULLET
@@ -267,13 +286,7 @@ endfunction " }}}
 function! s:write_line (lineobj) " {{{
     let l:_ = a:lineobj
     call s:save_cursor_position()
-    if get(l:_, 'btype', s:NO_BULLET) == s:NO_BULLET
-        call setline(l:_['row'], l:_['pspace'] . l:_['text'])
-    elseif l:_['btype'] == s:UL_BULLET
-        call setline(l:_['row'], l:_['pspace'] . s:get_ul_bullet(l:_) . l:_['text'])
-    else
-        call setline(l:_['row'], l:_['pspace'] . s:get_ol_bullet(l:_) . l:_['text'])
-    endif
+    call setline(l:_['row'], l:_['pspace'] . s:get_bullet_str(l:_) . l:_['text'])
     if l:_['row'] == line('.')
         let l:origin_len = s:vwidth(l:_['origin'])
         let l:new_len = s:vwidth(getline('.'))
@@ -281,23 +294,10 @@ function! s:write_line (lineobj) " {{{
     endif
 endfunction " }}}
 
-function! rst#set_bullet (...) " {{{
+function! rst#set_bullet () " {{{
     let l:lineobj = s:parse_line('.')
-
-    if a:0 == 1 && (a:1 ==# '>' || a:1 ==# '<')
-        " argument '>': adjust right
-        " argument '<': adjust left
-        let l:lineobj['follow'] = a:1
-    else
-        " default: align left
-        let l:lineobj['follow'] = '<'
-        " just toggle the bullet, if we are wrong, next step will correct it
-        call s:toggle_bullet(l:lineobj)
-    endif
-
-    " look behind to find a reference line
-    call s:look_behind_for_bullet(l:lineobj)
-
+    call s:toggle_bullet(l:lineobj)
+    call s:unify_bullet(l:lineobj, '<')
     call s:write_line(l:lineobj)
 endfunction " }}}
 
@@ -310,28 +310,29 @@ function! rst#remove_bullet () " {{{
 endfunction " }}}
 
 function! rst#increase_indent () " {{{
-    call s:save_cursor_position()
-    normal! >>
-    call s:restore_cursor_position(0, &shiftwidth)
-
     let l:lineobj = s:parse_line('.')
     if has_key(l:lineobj, 'btype')
-        call rst#set_bullet('>')
+        let l:lineobj['pspace'] = l:lineobj['pspace'] . repeat(' ', s:vwidth(s:get_bullet_str(l:lineobj)))
+        call s:unify_bullet(l:lineobj, '>')
+
+    else
+        let l:lineobj['pspace'] = l:lineobj['pspace'] . repeat(' ', &shiftwidth)
+
     endif
+
+    call s:write_line(l:lineobj)
 endfunction " }}}
 
 function! rst#decrease_indent () " {{{
-    call s:save_cursor_position()
-    let l:shift_offset = s:vwidth(getline('.'))
-    normal! <<
-    let l:shift_offset = l:shift_offset - s:vwidth(getline('.'))
-    " restore cursor position
-    call s:restore_cursor_position(0, -l:shift_offset)
-
     let l:lineobj = s:parse_line('.')
+    let l:lineobj['pspace'] = repeat(' ', s:vwidth(l:lineobj['pspace']) - &shiftwidth)
     if has_key(l:lineobj, 'btype')
-        call rst#set_bullet('<')
+        call s:unify_bullet(l:lineobj, '<')
+
     endif
+
+    call s:write_line(l:lineobj)
+    return
 endfunction " }}}
 
 function! rst#carriage_return () " {{{
