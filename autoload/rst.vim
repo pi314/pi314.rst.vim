@@ -199,10 +199,10 @@ function! s:unify_bullet (lineobj, alignment)
             endif
 
         elseif has_key(l:ref_lineobj, 'btype')
+            " a bulleted item
             let l:empty_line_flag = 0
             let l:align_point_1 = s:vwidth(l:ref_lineobj['pspace'])
             let l:align_point_2 = s:vwidth(l:ref_lineobj['origin']) - s:vwidth(l:ref_lineobj['text'])
-            " a bulleted item
             if s:vwidth(l:ref_lineobj['pspace']) == s:vwidth(a:lineobj['pspace'])
                 " same indent, follow it
                 let l:condition = 'FOLLOW'
@@ -232,18 +232,21 @@ function! s:unify_bullet (lineobj, alignment)
                 break
 
             else
-                " less indent bulleted list item, I'm either its subitem or no
-                " relation, so reset bullet
+                " lesser indent bulleted list item, I'm either its subitem or
+                " no relation, so reset bullet
                 let l:condition = 'RESET_BULLET'
                 break
 
             endif
 
         else
+            " normal line
             let l:empty_line_flag = 0
-            " found a normal line, set bullet number to 1
-            let l:condition = 'RESET_BULLET'
-            break
+            if s:vwidth(l:ref_lineobj['pspace']) <= s:vwidth(a:lineobj['pspace'])
+                " same or lesser indent, reset bullte
+                let l:condition = 'RESET_BULLET'
+                break
+            endif
 
         endif
 
