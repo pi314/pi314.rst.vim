@@ -36,3 +36,10 @@ inoremap <buffer> <silent> <C-d> <C-\><C-o>:call rst#decrease_indent()<CR>
 
 inoremap <buffer> <silent> <TAB> <C-r>=rst#tab()<CR>
 inoremap <buffer> <silent> <S-TAB> <C-\><C-o>:call rst#shift_tab()<CR>
+
+" Prevent (completion && <BS>) caused indentation broken
+let s:bs_imap_save = maparg("<BS>", "i")
+if empty(s:bs_imap_save)
+    let s:bs_imap_save = "<BS>"
+endif
+execute 'inoremap <expr> <BS> (pumvisible() ? "<C-Y>" : "") . "'. s:bs_imap_save .'"'
