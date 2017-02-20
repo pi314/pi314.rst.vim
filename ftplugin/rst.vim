@@ -42,4 +42,4 @@ let s:bs_imap_save = maparg("<BS>", "i")
 if empty(s:bs_imap_save)
     let s:bs_imap_save = "<BS>"
 endif
-execute 'inoremap <expr> <BS> (pumvisible() ? "<C-Y>" : "") . "'. s:bs_imap_save .'"'
+execute 'inoremap <expr> <buffer> <silent> <BS> (pumvisible() ? "<C-Y>" : "") . "'. s:bs_imap_save .'"'
