@@ -1,3 +1,8 @@
+if exists('b:rst_vim_loaded')
+    finish
+endif
+let b:rst_vim_loaded = 1
+
 nnoremap <buffer> <silent> <leader>b :call rst#set_bullet()<CR>
 vnoremap <buffer> <silent> <leader>b :call rst#set_bullet()<CR>gv
 inoremap <buffer> <silent> <leader>b <C-\><C-o>:call rst#set_bullet()<CR>
@@ -38,8 +43,8 @@ inoremap <buffer> <silent> <TAB> <C-r>=rst#tab()<CR>
 inoremap <buffer> <silent> <S-TAB> <C-\><C-o>:call rst#shift_tab()<CR>
 
 " Prevent (completion && <BS>) caused indentation broken
-let s:bs_imap_save = maparg("<BS>", "i")
-if empty(s:bs_imap_save)
-    let s:bs_imap_save = "<BS>"
+let b:imap_bs_save = maparg("<BS>", "i")
+if empty(b:imap_bs_save)
+    let b:imap_bs_save = "<BS>"
 endif
-execute 'inoremap <expr> <buffer> <silent> <BS> (pumvisible() ? "<C-Y>" : "") . "'. s:bs_imap_save .'"'
+execute 'inoremap <expr> <buffer> <silent> <BS> (pumvisible() ? "<C-Y>" : "") . "'. b:imap_bs_save .'"'
