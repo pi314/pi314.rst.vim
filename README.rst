@@ -1,12 +1,16 @@
-=============
+===============================================================================
 pi314.rst.vim
-=============
+===============================================================================
 
-I like reStructuredText, but I can't get used to ``riv.vim``, so I wrote one.
+I like reStructuredText, but I can't get used to
+`riv.vim <https://github.com/Rykka/riv.vim>`_, so I wrote one.
+
 
 Usage
------
+-------------------------------------------------------------------------------
 
+Mappings
+*******************************************************************************
 * Titles (Sections)
 
   - ``tj`` jumps down by one rst section
@@ -33,15 +37,22 @@ Usage
   - ``^``, ``I`` moves cursor to a logical line start
   - ``J`` joins two line without keeping second line's bullet
 
+* Links
+
+  - [visual mode] ``<leader>l`` wraps selected text into embedded URL
+
+
+Options
+*******************************************************************************
 My rst reference: http://docutils.sourceforge.net/docs/user/rst/quickref.html
 
-More
-----
 
+More
+-------------------------------------------------------------------------------
 Published under WTFPL.
 
 This tiny project is still under developing, I am adding features I need.
 Hot keys may be customizable in the future.
 
-If you need vim rst support, try ``riv.vim``, its table-drawing feature is AMAZING.
-
+Although I can't get used to `riv.vim <https://github.com/Rykka/riv.vim>`_,
+you should really give it a try. It's a very mature plugin.
