@@ -429,7 +429,7 @@ function! s:get_title_line (row) " {{{
 endfunction " }}}
 
 function! rst#make_title (level) " {{{
-    if a:level < 1 || a:level > 6
+    if a:level < 1 || a:level > strlen(g:rst_title_chars)
         return
     endif
 
@@ -440,7 +440,26 @@ function! rst#make_title (level) " {{{
         return
     endif
 
-    let l:title_line = repeat("=-`'.~*"[a:level - 1], l:text_length + a:level - 1)
+    let l:title_char_ok = 0
+    for l:c in split(s:VALID_RST_SECTION_CHARS, '\zs')
+        if g:rst_title_chars[a:level - 1] == l:c
+            let l:title_char_ok = 1
+            break
+        endif
+    endfor
+
+    if !l:title_char_ok
+        echom g:rst_title_chars[a:level - 1] ." is not a valid rst title character."
+        return
+    endif
+
+    if g:rst_title_style == 'fit'
+        let l:title_line = repeat(g:rst_title_chars[a:level - 1], l:text_length)
+    elseif g:rst_title_style == 'lengthen'
+        let l:title_line = repeat(g:rst_title_chars[a:level - 1], l:text_length + (a:level - 1) * g:rst_title_length_step)
+    elseif g:rst_title_style == 'shorten'
+        let l:title_line = repeat(g:rst_title_chars[a:level - 1], g:rst_title_init_length - (a:level - 1) * g:rst_title_length_step)
+    endif
 
     let l:lastline_row = l:lineobj['row'] - 1
     let l:lastline = getline(l:lastline_row)
