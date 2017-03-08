@@ -48,3 +48,20 @@ if empty(b:imap_bs_save)
     let b:imap_bs_save = "<BS>"
 endif
 execute 'inoremap <expr> <buffer> <silent> <BS> (pumvisible() ? "<C-Y>" : "") . "'. b:imap_bs_save .'"'
+
+if !exists('g:rst_title_chars') || type(g:rst_title_chars) != type('')
+    let g:rst_title_chars = '=-*"''`'
+endif
+
+if !exists('g:rst_title_style') || type(g:rst_title_style) != type('') ||
+            \ index(['fit', 'lengthen', 'shorten'], g:rst_title_style) == -1
+    let g:rst_title_style = 'fit'
+endif
+
+if !exists('g:rst_title_length_step') || type(g:rst_title_length_step) != type(0)
+    let g:rst_title_length_step = 2
+endif
+
+if !exists('g:rst_title_init_length') || type(g:rst_title_init_length) != type(0)
+    let g:rst_title_init_length = 79
+endif
