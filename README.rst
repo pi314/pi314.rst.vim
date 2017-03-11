@@ -17,6 +17,21 @@ Mappings
   - ``tk`` jumps up by one rst section
   - ``t1`` ~ ``t6`` makes current line a rst section (add a line under current line)
   - ``t0`` generates a transition (a separate line)
+  - Different title style ::
+
+      let g:rst_title_style = "fit" / "lengthen" / "shorten"
+
+    + ``"fit"``: new title underline will be the same length as title
+    + ``"lengthen"``: new title under line will be longer as title level increasing
+    + ``"shorten"``: new title under line will be long, and its gets shorter as title level increasing
+
+  - Specify the length changing step of title line as title level increasing (for ``"lengthen"`` and ``"shorten"``) ::
+
+      let g:rst_title_length_step = 2
+
+  - Specify the initial length of title under line (for ``"shorten"``) ::
+
+      let g:rst_title_init_length = 79
 
 * Bullet/Enumerated Lists
 
