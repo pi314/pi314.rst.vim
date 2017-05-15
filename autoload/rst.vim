@@ -318,7 +318,7 @@ function! rst#increase_indent () " {{{
         let l:lineobj['pspace'] = l:lineobj['pspace'] . repeat(' ', s:vwidth(s:get_bullet_str(l:lineobj)))
         call s:unify_bullet(l:lineobj, '>')
 
-    else
+    elseif l:lineobj['text'] != ''
         let l:lineobj['pspace'] = l:lineobj['pspace'] . repeat(' ', &shiftwidth)
 
     endif
